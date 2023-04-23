@@ -35,6 +35,14 @@ def parse_arguments():
                         help="path to val set (must contain database and queries)")
     parser.add_argument("--test_path", type=str, default="data/sf_xs/test",
                         help="path to test set (must contain database and queries)")
+
+    # Checkpoint parameters
+    parser.add_argument("--ckpt_path", type=str, default=None,
+                        help="path to retrive the chekpoint of the model")
+
+    # Only test 
+    parser.add_argument("--only_test", type=str, default=None,
+                        help="Set to True if you want to avoid the train phase and test on --test_path")
     
     args = parser.parse_args()
     return args
