@@ -26,7 +26,7 @@ class LightningModel(pl.LightningModule):
         
         #ADDING the gempooling instead of avg2dpooling
         #feature_size should be the dimension of last layer's channel
-        self.model.avgpool = utils.GeMPooling( self.model.fc.in_features, pool_size=512, init_norm=3.0, eps=1e-6, normalize=False )
+        self.model.avgpool = utils.GeMPooling( self.model.avgpool.in_features, pool_size=512, init_norm=3.0, eps=1e-6, normalize=False )
         
         # Change the output of the FC layer to the desired descriptors dimension
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
