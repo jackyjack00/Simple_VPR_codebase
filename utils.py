@@ -70,9 +70,14 @@ class GeMPooling(nn.Module):
         
         #first it substitues all values < eps with eps than it computes ^p
         # features is [batch , 512 , 7 , 7] p is [512]
-        
+        print(f"\nFeatures before permute: {features.size()}\n")
+        features = features.permute((0, 3, 1, 2))
+        print(f"\nFeatures before clamp and pow: {features.size()}\n")
+        print(f"\np before clamp and pow: {self.p.size()}\n")
         features = features.clamp(min=self.eps).pow(self.p)
-        #REMOVED LINE features = features.permute((0, 3, 1, 2))
+        print(f"\nFeatures after clamp and pow: {features.size()}\n")
+        print(f"\np after clamp and pow: {self.p.size()}\n")
+        #features = features.permute((0, 3, 1, 2))
         #standard avg pooling operation
         print(f"\nFeatures befpre avgpooling: {features.size()}\n")
         features = self.avg_pooling(features)
