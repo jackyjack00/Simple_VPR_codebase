@@ -52,6 +52,7 @@ class GeMPooling(nn.Module):
         self.feature_size = feature_size  # Final layer channel size, the pow calc at -1 axis
         self.pool_size = pool_size
         self.init_norm = init_norm
+        #Use a learnable parameter p to compute not the standard average but a generalized where data is ^p and the sum is rooted by p
         self.p = torch.nn.Parameter(torch.ones(self.feature_size) * self.init_norm, requires_grad=True)
         self.p.data.fill_(init_norm)
         self.normalize = normalize
@@ -61,13 +62,18 @@ class GeMPooling(nn.Module):
     def forward(self, features):
         # filter invalid value: set minimum to 1e-6
         # features-> (B, H, W, C)
+        
+        #^p
         features = features.clamp(min=self.eps).pow(self.p)
         features = features.permute((0, 3, 1, 2))
+        #standard avg pooling operation
         features = self.avg_pooling(features)
         features = torch.squeeze(features)
         features = features.permute((0, 2, 3, 1))
+        #^1/p
         features = torch.pow(features, (1.0 / self.p))
-        # unit vector
+        
+        #if you want to normalize output featurs to a unit vector 
         if self.normalize:
             features = F.normalize(features, dim=-1, p=2)
         return features
