@@ -65,21 +65,18 @@ class GeMPooling(nn.Module):
     def forward(self, features):
         # filter invalid value: set minimum to 1e-6
         # features-> (B, H, W, C)
+        #feature tensor size is [n_batch , n_channels ,H , W] , p tensor should be broadcastable to feature size
         
         #first it substitues all values < eps with eps than it computes ^p
         print(f"\nFeatures befpre clamp_and_pow: {features.size()}\n")
         print(f"\np befpre clamp_and_pow: {self.p.size()}\n")
         features = features.clamp(min=self.eps).pow(self.p)
-        #DEBUGGING PRINT
-        #feature tensor size is [n_batch , n_channels ,H , W] , p tensor should match H = W
-        #it was (0, 3, 1, 2) --> (3, 1, 2)
         #REMOVED LINE features = features.permute((0, 3, 1, 2))
         #standard avg pooling operation
         print(f"\nFeatures befpre avgpooling: {features.size()}\n")
         features = self.avg_pooling(features)
         print(f"\nFeatures after avgpooling: {features.size()}\n")
         features = torch.squeeze(features)
-        #it was (0, 2, 3, 1) --> (2, 3, 1)
         #REMOVED LINE features = features.permute((0, 2, 3, 1))
         print(f"\nFeatures after squeezing: {features.size()}\n")
         #^1/p
