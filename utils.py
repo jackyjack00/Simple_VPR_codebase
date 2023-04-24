@@ -68,6 +68,8 @@ class GeMPooling(nn.Module):
         
         #^p
         features = features.clamp(min=self.eps).pow(self.p)
+        #DEBUGGING PRINT
+        print(f"p:{self.p.size()} \nfeatures: {features.size()}")
         #it was (0, 3, 1, 2) --> (3, 1, 2)
         features = features.permute((0, 3, 1, 2))
         #standard avg pooling operation
