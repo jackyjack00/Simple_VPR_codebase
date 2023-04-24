@@ -68,11 +68,13 @@ class GeMPooling(nn.Module):
         
         #^p
         features = features.clamp(min=self.eps).pow(self.p)
-        features = features.permute((0, 3, 1, 2))
+        #it was (0, 3, 1, 2) --> (3, 1, 2)
+        features = features.permute((3, 1, 2))
         #standard avg pooling operation
         features = self.avg_pooling(features)
         features = torch.squeeze(features)
-        features = features.permute((0, 2, 3, 1))
+        #it was (0, 2, 3, 1) --> (2, 3, 1)
+        features = features.permute((2, 3, 1))
         #^1/p
         features = torch.pow(features, (1.0 / self.p))
         
