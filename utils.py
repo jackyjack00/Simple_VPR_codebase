@@ -66,7 +66,8 @@ class GeMPooling(nn.Module):
         # filter invalid value: set minimum to 1e-6
         # features-> (B, H, W, C)
         
-        #^p
+        #first it substitues all values < eps with eps than it computes ^p
+        print(f"\nFeatures befpre clamp_and_pow: {features.size()}\n")
         features = features.clamp(min=self.eps).pow(self.p)
         #DEBUGGING PRINT
         #feature tensor size is [n_batch , n_channels ,H , W] , p tensor should match H = W
