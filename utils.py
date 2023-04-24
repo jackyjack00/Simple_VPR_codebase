@@ -69,14 +69,14 @@ class GeMPooling(nn.Module):
         #^p
         features = features.clamp(min=self.eps).pow(self.p)
         #DEBUGGING PRINT
-        print(f"p:{self.p.size()} \nfeatures: {features.size()}")
+        #feature tensor size is [n_batch , n_channels ,H , W] , p tensor should match H = W
         #it was (0, 3, 1, 2) --> (3, 1, 2)
-        features = features.permute((0, 3, 1, 2))
+        #REMOVED LINE features = features.permute((0, 3, 1, 2))
         #standard avg pooling operation
         features = self.avg_pooling(features)
         features = torch.squeeze(features)
         #it was (0, 2, 3, 1) --> (2, 3, 1)
-        features = features.permute((0, 2, 3, 1))
+        #REMOVED LINE features = features.permute((0, 2, 3, 1))
         #^1/p
         features = torch.pow(features, (1.0 / self.p))
         
