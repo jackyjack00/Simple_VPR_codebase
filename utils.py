@@ -73,7 +73,7 @@ class GeMPooling(nn.Module):
         print(f"\nFeatures before clamp and pow: {features.size()}\n")
         print(f"\np before clamp and pow: {self.p.size()}\n")
         
-        my_p = self.p.resize((512,1,1)) * torch.ones( (512,7,7))
+        my_p = self.p.reshape((512,1,1)) * torch.ones( (512,7,7))
         
         features = features.clamp(min=self.eps).pow(my_p)
         
@@ -87,7 +87,7 @@ class GeMPooling(nn.Module):
         print(f"\nFeatures after avgpooling: {features.size()}\n")
         features = torch.squeeze(features)
         
-        features = features.permute((0, 2, 3, 1))
+        #features = features.permute((0, 2, 3, 1))
         print(f"\nFeatures after squeezing: {features.size()}\n")
         #^1/p
         features = torch.pow(features, (1.0 / self.p))
