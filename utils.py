@@ -2,6 +2,8 @@
 import faiss
 import logging
 import numpy as np
+import torch
+import torchvision.models
 from typing import Tuple
 from torch.utils.data import Dataset
 
