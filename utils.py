@@ -73,7 +73,7 @@ class GeMPooling(nn.Module):
         print(f"\nFeatures before clamp and pow: {features.size()}\n")
         print(f"\np before clamp and pow: {self.p.size()}\n")
         
-        my_p = self.p * torch.ones( (512,7,7))
+        my_p = self.p.resize((512,1,1)) * torch.ones( (512,7,7))
         
         features = features.clamp(min=self.eps).pow(my_p)
         
