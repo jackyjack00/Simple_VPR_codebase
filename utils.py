@@ -69,8 +69,10 @@ class GeMPooling(nn.Module):
         # feature tensor size is [n_batch , n_channels ,H , W] , p tensor should be broadcastable to feature size
         # first it substitues all values < eps with eps than it computes ^p
         # features is [batch , 512 , 7 , 7] p is [512] so manually reshape it to manage the broadcasting
-        ones = torch.ones( (512,7,7)).to(device = "cuda")
-        my_p = self.p.reshape((512,1,1)) * ones
+        
+        #ones = torch.ones( (512,7,7)).to(device = "cuda")
+        #my_p = self.p.reshape((512,1,1)) * ones
+        my_p = self.p.reshape((512,1,1))
         
         features = features.clamp(min=self.eps).pow(my_p)
         #features = features.permute((0, 3, 1, 2))
