@@ -73,13 +73,13 @@ class GeMPooling(nn.Module):
         #it was (0, 3, 1, 2) --> (3, 1, 2)
         #REMOVED LINE features = features.permute((0, 3, 1, 2))
         #standard avg pooling operation
-        print(f"\nFeatures befpre avgpooling: {fetures.size()}\n")
+        print(f"\nFeatures befpre avgpooling: {features.size()}\n")
         features = self.avg_pooling(features)
-        print(f"\nFeatures after avgpooling: {fetures.size()}\n")
+        print(f"\nFeatures after avgpooling: {features.size()}\n")
         features = torch.squeeze(features)
         #it was (0, 2, 3, 1) --> (2, 3, 1)
         #REMOVED LINE features = features.permute((0, 2, 3, 1))
-        print(f"\nFeatures after squeezing: {fetures.size()}\n")
+        print(f"\nFeatures after squeezing: {features.size()}\n")
         #^1/p
         features = torch.pow(features, (1.0 / self.p))
         
