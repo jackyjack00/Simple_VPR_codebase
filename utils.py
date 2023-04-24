@@ -67,23 +67,27 @@ class GeMPooling(nn.Module):
         # filter invalid value: set minimum to 1e-6
         # features-> (B, H, W, C)
         #feature tensor size is [n_batch , n_channels ,H , W] , p tensor should be broadcastable to feature size
-        
         #first it substitues all values < eps with eps than it computes ^p
         # features is [batch , 512 , 7 , 7] p is [512]
         print(f"\nFeatures before permute: {features.size()}\n")
-        features = features.permute((0, 3, 2, 1))
         print(f"\nFeatures before clamp and pow: {features.size()}\n")
         print(f"\np before clamp and pow: {self.p.size()}\n")
-        features = features.clamp(min=self.eps).pow(self.p)
+        
+        my_p = self.p * torch.ones( (512,7,7))
+        
+        features = features.clamp(min=self.eps).pow(my_p)
+        
         print(f"\nFeatures after clamp and pow: {features.size()}\n")
         print(f"\np after clamp and pow: {self.p.size()}\n")
         #features = features.permute((0, 3, 1, 2))
+        
         #standard avg pooling operation
         print(f"\nFeatures befpre avgpooling: {features.size()}\n")
         features = self.avg_pooling(features)
         print(f"\nFeatures after avgpooling: {features.size()}\n")
         features = torch.squeeze(features)
-        #REMOVED LINE features = features.permute((0, 2, 3, 1))
+        
+        features = features.permute((0, 2, 3, 1))
         print(f"\nFeatures after squeezing: {features.size()}\n")
         #^1/p
         features = torch.pow(features, (1.0 / self.p))
