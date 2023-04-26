@@ -20,6 +20,9 @@ def parse_arguments():
     parser.add_argument("--descriptors_dim", type=int, default=512,
                         help="dimensionality of the output descriptors")
     
+    parser.add_argument("--pooling_layer", type = str, default="default",
+                        help="change the last pooling layer.Supported so far:\n'default'\n'GeM'")
+    
     # Visualizations parameters
     parser.add_argument("--num_preds_to_save", type=int, default=0,
                         help="At the end of training, save N preds for each query. "
