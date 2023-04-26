@@ -12,10 +12,10 @@ import utils
 import parser
 from datasets.test_dataset import TestDataset
 from datasets.train_dataset import TrainDataset
-
+import my_blocks
 
 class LightningModel(pl.LightningModule):
-    def __init__(self, val_dataset, test_dataset, descriptors_dim=512, num_preds_to_save=0, save_only_wrong_preds=True):
+    def __init__(self, val_dataset, test_dataset, descriptors_dim=512, num_preds_to_save=0, save_only_wrong_preds=True , last_pooling_layer = "default"):
         super().__init__()
         self.val_dataset = val_dataset
         self.test_dataset = test_dataset
@@ -24,9 +24,12 @@ class LightningModel(pl.LightningModule):
         # Use a pretrained model
         self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
         
-        #ADDING the gempooling instead of avg2dpooling
-        #feature_size should be the dimension of last layer's channel in resnet18 is 7
-        self.model.avgpool = utils.GeMPooling( feature_size = 512 , pool_size=7, init_norm=3.0, eps=1e-6, normalize=False )
+        #change the model according to the cpmmand line parameter 
+        #TODO change 512 hardcoded with self.model.fc.in_features and check if that makes sense
+        if last_pooling_layer.lower() == "gem":
+            #ADDING the gempooling instead of avg2dpooling
+            #feature_size should be the dimension of last layer's channel in resnet18 is 7
+            self.model.avgpool = my_blocks.GeMPooling( feature_size = 512 , pool_size=7, init_norm=3.0, eps=1e-6, normalize=False )
         
         # Change the output of the FC layer to the desired descriptors dimension
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
@@ -120,11 +123,12 @@ if __name__ == '__main__':
     if args.ckpt_path is not None:
       model_args = {
         "val_dataset" : val_dataset,
-        "test_dataset" : test_dataset
+        "test_dataset" : test_dataset,
+        "last_pooling_layer" : args.pooling_layer
       }
       model = LightningModel.load_from_checkpoint(args.ckpt_path, **model_args)
     else:
-      model = LightningModel(val_dataset, test_dataset, args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds)
+      model = LightningModel(val_dataset, test_dataset, args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds, last_pooling_layer = args.pooling_layer)
     
     # Model params saving using Pytorch Lightning. Save the best 3 models according to Recall@1
     checkpoint_cb = ModelCheckpoint(
