@@ -124,15 +124,14 @@ def get_datasets_and_dataloaders(args):
 if __name__ == '__main__':
     args = parser.parse_arguments()
     train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader = get_datasets_and_dataloaders(args)
-    
-    # Load the chekpoint if available or else rebuild it
-    if args.ckpt_path is not None:
-      model_args = {
+    model_args = {
         "val_dataset" : val_dataset,
         "test_dataset" : test_dataset,
         "last_pooling_layer" : args.pooling_layer,
         "optimizer_str" : args.optimizer
-      }
+    }
+    # Load the chekpoint if available or else rebuild it
+    if args.ckpt_path is not None:
       model = LightningModel.load_from_checkpoint(args.ckpt_path, **model_args)
     else:
       model = LightningModel(val_dataset, test_dataset, args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds, **model_args)
