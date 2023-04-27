@@ -15,12 +15,15 @@ from datasets.train_dataset import TrainDataset
 import my_blocks
 
 class LightningModel(pl.LightningModule):
-    def __init__(self, val_dataset, test_dataset, descriptors_dim=512, num_preds_to_save=0, save_only_wrong_preds=True , last_pooling_layer = "default"):
+    def __init__(self, val_dataset, test_dataset, descriptors_dim=512, num_preds_to_save=0, save_only_wrong_preds=True , last_pooling_layer = "default", optimizer_str = "default"):
         super().__init__()
         self.val_dataset = val_dataset
         self.test_dataset = test_dataset
         self.num_preds_to_save = num_preds_to_save
         self.save_only_wrong_preds = save_only_wrong_preds
+        
+        #some architecture's parameters
+        self.optimizer_str = optimizer_str.lower()
         # Use a pretrained model
         self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
         
@@ -41,7 +44,10 @@ class LightningModel(pl.LightningModule):
         return descriptors
 
     def configure_optimizers(self):
-        optimizers = torch.optim.SGD(self.parameters(), lr=0.001, weight_decay=0.001, momentum=0.9)
+        if self.optimizer_str == "default":
+            optimizers = torch.optim.SGD(self.parameters(), lr=0.001, weight_decay=0.001, momentum=0.9)
+        elif self.optimizer_str == "adam":
+            optimizers = torch.optim.adam(self.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
         return optimizers
 
     #  The loss function call (this method will be called at each training iteration)
@@ -124,11 +130,12 @@ if __name__ == '__main__':
       model_args = {
         "val_dataset" : val_dataset,
         "test_dataset" : test_dataset,
-        "last_pooling_layer" : args.pooling_layer
+        "last_pooling_layer" : args.pooling_layer,
+        "optimizer_str" : args.optimizer
       }
       model = LightningModel.load_from_checkpoint(args.ckpt_path, **model_args)
     else:
-      model = LightningModel(val_dataset, test_dataset, args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds, last_pooling_layer = args.pooling_layer)
+      model = LightningModel(val_dataset, test_dataset, args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds, **model_args)
     
     # Model params saving using Pytorch Lightning. Save the best 3 models according to Recall@1
     checkpoint_cb = ModelCheckpoint(
