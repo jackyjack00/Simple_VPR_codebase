@@ -47,7 +47,7 @@ class LightningModel(pl.LightningModule):
         if self.optimizer_str == "default":
             optimizers = torch.optim.SGD(self.parameters(), lr=0.001, weight_decay=0.001, momentum=0.9)
         elif self.optimizer_str == "adam":
-            optimizers = torch.optim.adam(self.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+            optimizers = torch.optim.Adam(self.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
         return optimizers
 
     #  The loss function call (this method will be called at each training iteration)
