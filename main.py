@@ -134,7 +134,7 @@ if __name__ == '__main__':
     if args.ckpt_path is not None:
       model = LightningModel.load_from_checkpoint(args.ckpt_path, **model_args)
     else:
-      model = LightningModel(val_dataset, test_dataset, args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds, **model_args)
+      model = LightningModel(args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds, **model_args)
     
     # Model params saving using Pytorch Lightning. Save the best 3 models according to Recall@1
     checkpoint_cb = ModelCheckpoint(
