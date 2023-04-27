@@ -23,6 +23,9 @@ def parse_arguments():
     parser.add_argument("--pooling_layer", type = str, default="default",
                         help="change the last pooling layer.Supported so far:\n'default'\n'GeM'")
     
+    parser.add_argument("--optimizer", type = str, default="default",
+                        help="change the optimizer for the parameters update:\n'default'\n'Adam'")
+    
     # Visualizations parameters
     parser.add_argument("--num_preds_to_save", type=int, default=0,
                         help="At the end of training, save N preds for each query. "
