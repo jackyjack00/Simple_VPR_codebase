@@ -46,8 +46,11 @@ class LightningModel(pl.LightningModule):
             self.model.fc = torch.nn.Linear(self.model.fc.in_features * 64 , descriptors_dim)
         else:
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
+        
+        #set a miner
+        self.miner = PairMarginMiner(pos_margin=0.2, neg_margin=0.8)    
         # Set the loss function
-        self.loss_fn = losses.ContrastiveLoss(pos_margin=0, neg_margin=1)
+        self.loss_fn = losses.ContrastiveLoss(pos_margin=0, neg_margin=1, miner = self.miner)
 
     def forward(self, images):
         descriptors = self.model(images)
