@@ -48,9 +48,9 @@ class LightningModel(pl.LightningModule):
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
         
         #set a miner
-        self.miner = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)    
+        self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)    
         # Set the loss function
-        self.loss_fn = losses.ContrastiveLoss(pos_margin=0, neg_margin=1, miner = self.miner)
+        self.loss_fn = losses.ContrastiveLoss(pos_margin=0, neg_margin=1)
 
     def forward(self, images):
         descriptors = self.model(images)
@@ -65,7 +65,9 @@ class LightningModel(pl.LightningModule):
 
     # The loss function call (this method will be called at each training iteration)
     def loss_function(self, descriptors, labels):
-        loss = self.loss_fn(descriptors, labels)
+        #include a miner for loss pair computation
+        miner_output = self.miner_fn(descriptors , labels)
+        loss = self.loss_fn(descriptors, labels, miner_output)
         return loss
 
     # This is the training step that's executed at each iteration
