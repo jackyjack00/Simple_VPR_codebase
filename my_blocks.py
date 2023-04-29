@@ -201,5 +201,11 @@ class PatchNetVLAD(nn.Module):
         vlad_global = F.normalize(vlad_global, p=2, dim=2)
         vlad_global = vlad_global.view(x.size(0), -1)
         vlad_global = F.normalize(vlad_global, p=2, dim=1)
-
+        
+        print("\n\nSome details of returned netvlad stuff")
+        print( vlad_local )
+        print( len(vlad_local) )
+        print("\n\n Global")
+        print( vlad_global )
+        print( len(vlad_global) )
         return vlad_local, vlad_global  # vlad_local is a list of tensors
