@@ -208,4 +208,6 @@ class PatchNetVLAD(nn.Module):
         print("\n\n Global")
         print( vlad_global )
         print( len(vlad_global) )
-        return vlad_local, vlad_global  # vlad_local is a list of tensors
+        
+        #return vlad_local, vlad_global  # vlad_local is a list of tensors
+        return vlad_global
