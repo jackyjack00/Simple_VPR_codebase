@@ -4,7 +4,7 @@ import numpy as np
 import torchvision.models
 import pytorch_lightning as pl
 from torchvision import transforms as tfm
-from pytorch_metric_learning import losses
+from pytorch_metric_learning import losses , miners
 from torch.utils.data.dataloader import DataLoader
 from pytorch_lightning.callbacks import ModelCheckpoint
 
@@ -48,7 +48,7 @@ class LightningModel(pl.LightningModule):
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
         
         #set a miner
-        self.miner = PairMarginMiner(pos_margin=0.2, neg_margin=0.8)    
+        self.miner = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)    
         # Set the loss function
         self.loss_fn = losses.ContrastiveLoss(pos_margin=0, neg_margin=1, miner = self.miner)
 
