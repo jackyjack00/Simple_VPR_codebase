@@ -39,8 +39,12 @@ class LightningModel(pl.LightningModule):
         elif self.pooling_str == "netvlad":
             self.model.avgpool = my_blocks.NetVLAD( num_clusters = 64, dim = self.model.fc.in_features )
              
-        # Change the output of the FC layer to the desired descriptors dimension
-        self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
+        #Change the output of the FC layer to the desired descriptors dimension
+        if self.pooling_str == "netvlad":
+            #VLAD like architecture generates in_features*n_clusters outputs
+            self.model.fc = torch.nn.Linear(self.model.fc.in_features * 64 , descriptors_dim)
+        else
+            self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
         # Set the loss function
         self.loss_fn = losses.ContrastiveLoss(pos_margin=0, neg_margin=1)
 
