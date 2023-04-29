@@ -24,16 +24,17 @@ class LightningModel(pl.LightningModule):
         
         #some architecture's parameters
         self.optimizer_str = optimizer_str.lower()
+        self.pooling_str = last_pooling_layer.lower()
+        
         # Use a pretrained model
         self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
         
-        #change the model according to the cpmmand line parameter 
-        #TODO change 512 hardcoded with self.model.fc.in_features and check if that makes sense
-        if last_pooling_layer.lower() == "gem":
-            #ADDING the gempooling instead of avg2dpooling
-            #feature_size should be the dimension of last layer's channel in resnet18 is 7
-            self.model.avgpool = my_blocks.GeMPooling( feature_size = 512 , pool_size=7, init_norm=3.0, eps=1e-6, normalize=False )
-        
+        #  Change the model's pooling layer according to the command line parameter, "default" is avg_pooling
+        if self.pooling_str == "gem":
+            self.model.avgpool = my_blocks.GeMPooling( feature_size = self.model.fc.in_features , pool_size=7, init_norm=3.0, eps=1e-6, normalize=False )
+        elif self.pooling_str == "patchnetvlad":
+            self.model.avgpool = my_blocks.PatchNetVLAD( num_clusters = 64, dim = self.model.fc.in_features )
+           
         # Change the output of the FC layer to the desired descriptors dimension
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
         # Set the loss function
@@ -50,7 +51,7 @@ class LightningModel(pl.LightningModule):
             optimizers = torch.optim.Adam(self.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
         return optimizers
 
-    #  The loss function call (this method will be called at each training iteration)
+    # The loss function call (this method will be called at each training iteration)
     def loss_function(self, descriptors, labels):
         loss = self.loss_fn(descriptors, labels)
         return loss
