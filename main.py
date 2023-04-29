@@ -32,9 +32,13 @@ class LightningModel(pl.LightningModule):
         #  Change the model's pooling layer according to the command line parameter, "default" is avg_pooling
         if self.pooling_str == "gem":
             self.model.avgpool = my_blocks.GeMPooling( feature_size = self.model.fc.in_features , pool_size=7, init_norm=3.0, eps=1e-6, normalize=False )
+            
         elif self.pooling_str == "patchnetvlad":
             self.model.avgpool = my_blocks.PatchNetVLAD( num_clusters = 64, dim = self.model.fc.in_features )
-           
+            
+        elif self.pooling_str == "netvlad":
+            self.model.avgpool = my_blocks.NetVLAD( num_clusters = 64, dim = self.model.fc.in_features )
+             
         # Change the output of the FC layer to the desired descriptors dimension
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
         # Set the loss function
