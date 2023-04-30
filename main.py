@@ -48,9 +48,11 @@ class LightningModel(pl.LightningModule):
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
         
         # Set a miner
-        self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)    
+        # self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)
+        self.miner_fn = miners.MultiSimilarityMiner( epsilon=0.1 )
         # Set the loss function
-        self.loss_fn = losses.ContrastiveLoss(pos_margin=0, neg_margin=1)
+        #self.loss_fn = losses.ContrastiveLoss(pos_margin=0, neg_margin=1)
+        self.loss_fn = losses.MultiSimilarityLoss( alpha=2, beta=50, base=0.5 )
 
     def forward(self, images):
         descriptors = self.model(images)
