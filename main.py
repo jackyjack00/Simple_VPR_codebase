@@ -47,7 +47,7 @@ class LightningModel(pl.LightningModule):
         else:
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
         
-        #set a miner
+        # Set a miner
         self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)    
         # Set the loss function
         self.loss_fn = losses.ContrastiveLoss(pos_margin=0, neg_margin=1)
@@ -61,12 +61,15 @@ class LightningModel(pl.LightningModule):
             optimizers = torch.optim.SGD(self.parameters(), lr=0.001, weight_decay=0.001, momentum=0.9)
         elif self.optimizer_str == "adam":
             optimizers = torch.optim.Adam(self.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+        elif self.optimizer_str == "adamw":
+            optimizers = torch.optim.AdamW(self.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.01)
         return optimizers
 
     # The loss function call (this method will be called at each training iteration)
     def loss_function(self, descriptors, labels):
-        #include a miner for loss pair computation
+        # Include a miner for loss'pair selection
         miner_output = self.miner_fn(descriptors , labels)
+        # Compute the loss using the loss function specified in __init__ and the miner output ?instead of all possible batch pairs?
         loss = self.loss_fn(descriptors, labels, miner_output)
         return loss
 
