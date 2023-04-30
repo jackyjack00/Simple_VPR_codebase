@@ -24,7 +24,7 @@ def parse_arguments():
                         help="change the last pooling layer.Supported so far:\n'default'\n'GeM'\n'NetVLAD\n'patch_NetVLAD")
     
     parser.add_argument("--optimizer", type = str, default="default",
-                        help="change the optimizer for the parameters update:\n'default'\n'Adam'")
+                        help="change the optimizer for the parameters update:\n'default'\n'Adam'\n'AdamW")
     
     # Visualizations parameters
     parser.add_argument("--num_preds_to_save", type=int, default=0,
