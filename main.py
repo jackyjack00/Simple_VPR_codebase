@@ -39,7 +39,8 @@ class LightningModel(pl.LightningModule):
         elif self.pooling_str == "netvlad":
             #changed to a version found in prof repo
             self.model.avgpool = my_blocks.NetVLAD( num_clusters = 64, dim = self.model.fc.in_features )
-             
+        elif self.pooling_str == "mixvpr":
+            self.model.avgpool = my_blocks.MixVPR( in_channels = 512, in_h=7, in_w=7 , out_channels = 512)
         #Change the output of the FC layer to the desired descriptors dimension
         if self.pooling_str == "netvlad":
             #VLAD like architecture generates in_features*n_clusters outputs
@@ -52,7 +53,8 @@ class LightningModel(pl.LightningModule):
         self.miner_fn = miners.MultiSimilarityMiner( epsilon=0.1 )
         # Set the loss function
         #self.loss_fn = losses.ContrastiveLoss(pos_margin=0, neg_margin=1)
-        self.loss_fn = losses.MultiSimilarityLoss( alpha=2, beta=50, base=0.5 )
+        #self.loss_fn = losses.MultiSimilarityLoss( alpha=2, beta=50, base=0.5 )
+        self.loss_fn = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
 
     def forward(self, images):
         descriptors = self.model(images)
