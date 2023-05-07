@@ -111,6 +111,67 @@ class MixVPR(nn.Module):
         return x
     
 ########################################################################################################################################    
+import faiss 
+import torch
+import torch.nn as nn
+
+class ProxyAccumulator:
+    def __init__(self, tensor = None, n = 0, dim = 512):
+        # Initialize the tensor and the counter of how many proxy is storing
+        if tensor is None:
+            # Tensor
+            self.proxy_sum = torch.zeros(dim)
+            # Counter
+            self.n = n
+        else:
+            self.proxy_sum = tensor
+            self.n = n
+        
+    def get_avg(self):
+        return self.proxy_sum / self.n
+
+    def __add__(self, other):
+        return ProxyAccumulator(tensor = self.proxy_sum + other.proxy_sum, n = self.n + other.n)
+
+class ProxyHead(nn.Module):
+    def __init__(self, in_dim , proxy_dim = 512):
+        super().__init__()
+        # Setting starting space dimension as in_dim and output space dimension as proxy_dim
+        self.projector = nn.Linear(in_dim, proxy_dim)
+        
+    def forward(self , x):
+        # Projection from R_in_dim to R_proxy_dim
+        out = self.projector(x)
+        # L2 norm of output
+        out = F.normalize(out, p=2)
+        return out
+    
+class ProxyBank():
+    def __init__(self, batch_size , proxy_dim = 512):
+        # Set the size of batches we want to generate
+        self.batch_size = batch_size
+        # Initialize an index containing vectors of dim equals to the proxy 
+        self.__index = faiss.IndexFlatL2( proxy_dim )
+        # Initialize a dictionary to summarize the proxy-place_label relation
+        self.__bank = {}
+    
+    def update_bank(self, proxies, labels):
+        # TODO: call at epoch_end
+        # Iterate over each pair proxy-label where proxy is the result of projection done by ProxyHead
+        for proxy, label in zip(proxies , labels):
+            # Create or Update the content of the bank dictionary
+            if label not in self.bank.keys():
+                self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 )
+            else:
+                self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 ) + self.__bank[label]
+        #TODO: once all is stored, then remember to use ProxyAccumulator.get_avg()
+        #TODO: reset and update the faiss index, possibly with a retrival of both vectors and labels
+    
+    #TODO: understand once the indexx is complete how to generate the batches usefull for the sampler and how to pass the results to it
+    def proxy_batch_sampling(self , batch_dim):
+        pass
+       
+########################################################################################################################################    
 
 import torch
 import torch.nn as nn
