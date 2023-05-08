@@ -167,8 +167,8 @@ class ProxyBank():
             # Use get_avg() to go from accumulator to average and compute the global proxy for each place
             self.__index.add_with_id( proxy_acc.get_avg() , label )
                
-    #TODO: understand once the indexx is complete how to generate the batches usefull for the sampler and how to pass the results to it
-    def proxy_batch_sampling(self , batch_dim):
+    #TODO: understand once the index is complete how to generate the batches usefull for the sampler and how to pass the results to it
+    def proxy_sampler(self , batch_dim):
         pass
        
 ########################################################################################################################################    
