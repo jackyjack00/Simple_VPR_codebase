@@ -150,13 +150,14 @@ class ProxyBank():
     def __init__(self, batch_size , proxy_dim = 512):
         # Set the size of batches we want to generate
         self.batch_size = batch_size
-        # Initialize an index containing vectors of dim equals to the proxy 
-        self.__index = faiss.IndexFlatL2( proxy_dim )
+        # Initialize an index containing vectors of dim equals to the proxy, and wrap it in order to use user defined index (place labels)
+        self.__base_index = faiss.IndexFlatL2( proxy_dim )
+        self.__index = faiss.IndexIDMap( self.__base_index )
         # Initialize a dictionary to summarize the proxy-place_label relation
         self.__bank = {}
     
+    #TODO: call at epoch_end
     def update_bank(self, proxies, labels):
-        # TODO: call at epoch_end
         # Iterate over each pair proxy-label where proxy is the result of projection done by ProxyHead
         for proxy, label in zip(proxies , labels):
             # Create or Update the content of the bank dictionary
@@ -164,9 +165,14 @@ class ProxyBank():
                 self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 )
             else:
                 self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 ) + self.__bank[label]
-        #TODO: once all is stored, then remember to use ProxyAccumulator.get_avg()
-        #TODO: reset and update the faiss index, possibly with a retrival of both vectors and labels
-    
+        
+        #TODO: this is slow and memory intensive: there may be a code solution not to generate the whole list
+        for label, proxy_acc in self.__bank.items():
+            # Override the index at each epoch. Do not stuck info from differet epoch (training should handle this aspect)
+            self.__index.reset()
+            # Use get_avg() to go from accumulator to average and compute the global proxy for each place
+            self.__index.add_with_id( proxy_acc.get_avg() , label )
+               
     #TODO: understand once the indexx is complete how to generate the batches usefull for the sampler and how to pass the results to it
     def proxy_batch_sampling(self , batch_dim):
         pass
