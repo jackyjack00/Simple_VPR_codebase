@@ -17,22 +17,17 @@ class GeMPooling(nn.Module):
         self.eps = eps
 
     def forward(self, features):
-        # filter invalid value: set minimum to 1e-6
-        # features-> (B, H, W, C)
-        # feature tensor size is [n_batch , n_channels ,H , W] , p tensor should be broadcastable to feature size
-        # first it substitues all values < eps with eps than it computes ^p
-        # features is [batch , 512 , 7 , 7] p is [512] so manually reshape it to manage the broadcasting
-        
-        #ones = torch.ones( (512,7,7)).to(device = "cuda")
-        #my_p = self.p.reshape((512,1,1)) * ones
+        # Feature tensor size is [n_batch , n_channels ,H , W] , p tensor should be broadcastable to feature size
+        # First it substitues all values < eps with eps than it computes ^p
+        # Features is [batch , 512 , 7 , 7] p is [512] so manually reshape it to manage the broadcasting
         my_p = self.p.reshape((512,1,1))
         
+        # Put a min value possible in the tensor, then computes the "to the power of my_p"
         features = features.clamp(min=self.eps).pow(my_p)
-        #features = features.permute((0, 3, 1, 2))
-        #standard avg pooling operation
+        # Standard avg pooling operation
         features = self.avg_pooling(features)
         features = torch.squeeze(features)
-        #^1/p
+        # Soot of power 1/p
         features = torch.pow(features, (1.0 / self.p))
         
         #if you want to normalize output featurs to a unit vector 
