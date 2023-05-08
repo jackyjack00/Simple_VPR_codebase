@@ -98,15 +98,22 @@ class MixVPR(nn.Module):
 
     def forward(self, x):
         print(f"\n\nThis is forward of mixVPR:\nbefore flatten x:{x.size()}\n\n")
+        # x is [n_batch, 512, 7, 7] and flattened to [n_batch, 512, 49]
         x = x.flatten(2)
         print(f"after flatten x:{x.size()}\n\n")
+        # mix layer preserves dimension, so it is still [n_batch, 512 , 49]
         x = self.mix(x)
         print(f"after mix x:{x.size()}\n\n")
         x = x.permute(0, 2, 1)
+        print(f"after first permute x:{x.size()}\n\n")
         x = self.channel_proj(x)
+        print(f"after channel projection x:{x.size()}\n\n")
         x = x.permute(0, 2, 1)
+        print(f"after second permute x:{x.size()}\n\n")
         x = self.row_proj(x)
+        print(f"after row projection x:{x.size()}\n\n")
         x = F.normalize(x.flatten(1), p=2, dim=-1)
+        print(f"after flatten + noramlization x:{x.size()}\n\n")
         return x
     
 ########################################################################################################################################    
