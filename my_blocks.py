@@ -68,10 +68,10 @@ class FeatureMixerLayer(nn.Module):
 
 class MixVPR(nn.Module):
     def __init__(self,
-                 in_channels=1024,
-                 in_h=20,
-                 in_w=20,
-                 out_channels=1024,
+                 in_channels=512,
+                 in_h=7,
+                 in_w=7,
+                 out_channels=512,
                  mix_depth=1,
                  mlp_ratio=1,
                  out_rows=4,
@@ -89,6 +89,7 @@ class MixVPR(nn.Module):
         self.mlp_ratio = mlp_ratio  # ratio of the mid projection layer in the mixer block
 
         hw = in_h * in_w
+        # Build the L MixerLayer in a cascade architecture
         self.mix = nn.Sequential(*[
             FeatureMixerLayer(in_dim=hw, mlp_ratio=mlp_ratio)
             for _ in range(self.mix_depth)
@@ -97,27 +98,20 @@ class MixVPR(nn.Module):
         self.row_proj = nn.Linear(hw, out_rows)
 
     def forward(self, x):
-        print(f"\n\nThis is forward of mixVPR:\nbefore flatten x:{x.size()}\n\n")
-        # x is [n_batch, 512, 7, 7] and flattened to [n_batch, 512, 49] from now on we refer as h*w dimension as "row"
+        # x is [n_batch, 512, 7, 7] and flattened to [n_batch, 512, 49] from now on we refer as h*w = 49 dimension as "row"
         x = x.flatten(2)
-        print(f"after flatten x:{x.size()}\n\n")
         # mix layer preserves dimension, so it is still [n_batch, 512 , 49]
         x = self.mix(x)
-        print(f"after mix x:{x.size()}\n\n")
         # Change the order of last two dimension of x from [n_batch, 512 , 49] to [n_batch, 49, 512]
         x = x.permute(0, 2, 1)
-        print(f"after first permute x:{x.size()}\n\n")
         # Reduce dimensionality of channels via Linear Layer from [n_batch , 49, 512] to [n_batch, 49, out_channels]
         x = self.channel_proj(x)
-        print(f"after channel projection x:{x.size()}\n\n")
         # Come back to original order of dimension [n_batch, out_channels, 49]
         x = x.permute(0, 2, 1)
-        print(f"after second permute x:{x.size()}\n\n")
-        # Reduce dimensionality of h*w called "row" via Linear Layer from [n_batch, out_channels, h*w] to [n_batch, out_channels, out_rows]
+        # Reduce dimensionality of h*w called "row" via Linear Layer from [n_batch, out_channels, 49] to [n_batch, out_channels, out_rows]
         x = self.row_proj(x)
-        print(f"after row projection x:{x.size()}\n\n")
+        # Produces an output of shape [n_batch, out_channels*out_channels]
         x = F.normalize(x.flatten(1), p=2, dim=-1)
-        print(f"after flatten + noramlization x:{x.size()}\n\n")
         return x
     
 ########################################################################################################################################    
