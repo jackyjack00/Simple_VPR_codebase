@@ -8,8 +8,8 @@ class GeMPooling(nn.Module):
         self.feature_size = feature_size  # Final layer channel size, the pow calc at -1 axis
         self.pool_size = pool_size
         self.init_norm = init_norm
-        #Use a learnable parameter p to compute not the standard average but a generalized where data is ^p and the sum is rooted by p
-        #We want to train a p for each channel of the result of CNN --> p has dim of last channel, then it is broadcasted to the img dimension
+        # Use a learnable parameter p to compute not the standard average but a generalized where data is ^p and the sum is rooted by p
+        # We want to train a p for each channel of the result of CNN --> p has dim of last channel, then it is broadcasted to the img dimension
         self.p = torch.nn.Parameter(torch.ones(self.feature_size) * self.init_norm, requires_grad=True)
         self.p.data.fill_(init_norm)
         self.normalize = normalize
@@ -30,7 +30,7 @@ class GeMPooling(nn.Module):
         # Soot of power 1/p
         features = torch.pow(features, (1.0 / self.p))
         
-        #if you want to normalize output featurs to a unit vector 
+        # If you want to normalize output featurs to a unit vector 
         if self.normalize:
             features = F.normalize(features, dim=-1, p=2)
         return features
@@ -61,7 +61,7 @@ class FeatureMixerLayer(nn.Module):
                     nn.init.zeros_(m.bias)
 
     def forward(self, x):
-        # Forward uses the Mixer and a skip connection 
+        # Forward uses a skip connection and the Mixer layer defined above
         return x + self.mix(x)
 
 
