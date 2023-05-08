@@ -160,7 +160,6 @@ class ProxyBank():
                 self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 )
             else:
                 self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 ) + self.__bank[label]
-        
         #TODO: this is slow and memory intensive: there may be a code solution not to generate the whole list
         for label, proxy_acc in self.__bank.items():
             # Override the index at each epoch. Do not stuck info from differet epoch (training should handle this aspect)
