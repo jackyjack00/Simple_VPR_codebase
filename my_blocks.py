@@ -74,7 +74,7 @@ class MixVPR(nn.Module):
                  out_channels=512,
                  mix_depth=1,
                  mlp_ratio=1,
-                 out_rows=4,
+                 out_rows=1,
                  ) -> None:
         super().__init__()
 
