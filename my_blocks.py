@@ -61,6 +61,7 @@ class FeatureMixerLayer(nn.Module):
                     nn.init.zeros_(m.bias)
 
     def forward(self, x):
+        print(f"\n\nThis is inside FeatureMixer:\nbefore anythig: \nx:{x.size()}\n\n")
         # Forward uses a skip connection and the Mixer layer defined above
         return x + self.mix(x)
 
@@ -96,9 +97,11 @@ class MixVPR(nn.Module):
         self.row_proj = nn.Linear(hw, out_rows)
 
     def forward(self, x):
-        print(f"This is forward of mixVPR:\t x:{x.size()}")
+        print(f"\n\nThis is forward of mixVPR:\nbefore flatten x:{x.size()}\n\n")
         x = x.flatten(2)
+        print(f"after flatten x:{x.size()}\n\n")
         x = self.mix(x)
+        print(f"after mix x:{x.size()}\n\n")
         x = x.permute(0, 2, 1)
         x = self.channel_proj(x)
         x = x.permute(0, 2, 1)
