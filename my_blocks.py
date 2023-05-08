@@ -61,7 +61,6 @@ class FeatureMixerLayer(nn.Module):
                     nn.init.zeros_(m.bias)
 
     def forward(self, x):
-        print(f"\n\nThis is inside FeatureMixer:\nbefore anythig: \nx:{x.size()}\n\n")
         # Forward uses a skip connection and the Mixer layer defined above
         return x + self.mix(x)
 
