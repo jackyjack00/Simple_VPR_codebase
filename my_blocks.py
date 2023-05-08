@@ -96,6 +96,7 @@ class MixVPR(nn.Module):
         self.row_proj = nn.Linear(hw, out_rows)
 
     def forward(self, x):
+        print(f"This is forward of mixVPR:\t x:{x.size()}")
         x = x.flatten(2)
         x = self.mix(x)
         x = x.permute(0, 2, 1)
