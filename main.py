@@ -36,7 +36,7 @@ class LightningModel(pl.LightningModule):
             #changed to a version found in prof repo
             self.model.avgpool = my_blocks.NetVLAD(num_clusters = 64, dim = self.model.fc.in_features)
         elif self.pooling_str == "mixvpr":
-            self.model.avgpool = my_blocks.MixVPR(in_channels = self.model.fc.in_features, in_h = 7, in_w = 7 , out_channels = self.model.fc.in_features)
+            self.model.avgpool = my_blocks.MixVPR(in_channels = self.model.fc.in_features*2, in_h = 7, in_w = 7 , out_channels = self.model.fc.in_features)
         
         # Change the output of the FC layer to the desired descriptors dimension
         if self.pooling_str == "netvlad":
