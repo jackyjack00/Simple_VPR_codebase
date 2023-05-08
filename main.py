@@ -42,11 +42,11 @@ class LightningModel(pl.LightningModule):
         
         # Change the output of the FC layer to the desired descriptors dimension
         if self.pooling_str == "netvlad":
-            #VLAD like architecture generates in_features*n_clusters outputs
+            # VLAD like architecture generates in_features*n_clusters outputs
             self.model.fc = torch.nn.Linear(self.model.fc.in_features * 64 , descriptors_dim)
         elif self.pooling_str == "mixvpr":
             # MixVPR take as input the final activation map of dim [n_batch,512,7,7] and outputs a feature vector for each batch [n_batch, out_channels * out_rows]
-            self.model.fc = torch.nn.Linear(  self.mixvpr_out_channels * self.mixvpr_out_rows = 4  , descriptors_dim)
+            self.model.fc = torch.nn.Linear(self.mixvpr_out_channels * self.mixvpr_out_rows, descriptors_dim)
         else:
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
         
