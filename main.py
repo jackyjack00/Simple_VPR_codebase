@@ -36,12 +36,17 @@ class LightningModel(pl.LightningModule):
             #changed to a version found in prof repo
             self.model.avgpool = my_blocks.NetVLAD(num_clusters = 64, dim = self.model.fc.in_features)
         elif self.pooling_str == "mixvpr":
-            self.model.avgpool = my_blocks.MixVPR(in_channels = self.model.fc.in_features, in_h = 7, in_w = 7)
+            self.mixvpr_out_channels = 512
+            self.mixvpr_out_rows = 4
+            self.model.avgpool = my_blocks.MixVPR( in_channels = self.model.fc.in_features, in_h = 7, in_w = 7, out_channels = self.mixvpr_out_channels , out_rows =  self.mixvpr_out_rows )
         
         # Change the output of the FC layer to the desired descriptors dimension
         if self.pooling_str == "netvlad":
             #VLAD like architecture generates in_features*n_clusters outputs
             self.model.fc = torch.nn.Linear(self.model.fc.in_features * 64 , descriptors_dim)
+        elif self.pooling_str == "mixvpr":
+            # MixVPR take as input the final activation map of dim [n_batch,512,7,7] and outputs a feature vector for each batch [n_batch, out_channels * out_rows]
+            self.model.fc = torch.nn.Linear(  self.mixvpr_out_channels * self.mixvpr_out_rows = 4  , descriptors_dim)
         else:
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
         
