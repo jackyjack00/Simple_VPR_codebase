@@ -32,16 +32,13 @@ class LightningModel(pl.LightningModule):
         #  Change the model's pooling layer according to the command line parameter, "default" is avg_pooling
         if self.pooling_str == "gem":
             self.model.avgpool = my_blocks.GeMPooling( feature_size = self.model.fc.in_features , pool_size=7, init_norm=3.0, eps=1e-6, normalize=False )
-            
-        elif self.pooling_str == "patchnetvlad":
-            self.model.avgpool = my_blocks.PatchNetVLAD( num_clusters = 64, dim = self.model.fc.in_features )
-            
         elif self.pooling_str == "netvlad":
             #changed to a version found in prof repo
             self.model.avgpool = my_blocks.NetVLAD( num_clusters = 64, dim = self.model.fc.in_features )
         elif self.pooling_str == "mixvpr":
             self.model.avgpool = my_blocks.MixVPR( in_channels = 512, in_h=7, in_w=7 , out_channels = 512)
-        #Change the output of the FC layer to the desired descriptors dimension
+        
+        # Change the output of the FC layer to the desired descriptors dimension
         if self.pooling_str == "netvlad":
             #VLAD like architecture generates in_features*n_clusters outputs
             self.model.fc = torch.nn.Linear(self.model.fc.in_features * 64 , descriptors_dim)
@@ -64,9 +61,9 @@ class LightningModel(pl.LightningModule):
         if self.optimizer_str == "default":
             optimizers = torch.optim.SGD(self.parameters(), lr=0.001, weight_decay=0.001, momentum=0.9)
         elif self.optimizer_str == "adam":
-            optimizers = torch.optim.Adam(self.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+            optimizers = torch.optim.Adam(self.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
         elif self.optimizer_str == "adamw":
-            optimizers = torch.optim.AdamW(self.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.01)
+            optimizers = torch.optim.AdamW(self.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.01)
         return optimizers
 
     # The loss function call (this method will be called at each training iteration)
@@ -137,6 +134,7 @@ def get_datasets_and_dataloaders(args):
     )
     val_dataset = TestDataset(dataset_folder=args.val_path)
     test_dataset = TestDataset(dataset_folder=args.test_path)
+    #TODO: define a subclass of DataLoader that accept the ProxyBank to return batches
     train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
