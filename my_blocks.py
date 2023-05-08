@@ -71,7 +71,7 @@ class MixVPR(nn.Module):
                  in_channels=1024,
                  in_h=20,
                  in_w=20,
-                 out_channels=512,
+                 out_channels=1024,
                  mix_depth=1,
                  mlp_ratio=1,
                  out_rows=1,
