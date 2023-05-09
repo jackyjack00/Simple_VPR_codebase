@@ -29,7 +29,7 @@ class LightningModel(pl.LightningModule):
         # Use a pretrained model
         self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
         
-        self.model = [ layer for layer in self.model.children()[:-2] ]
+        self.model = [ layer for layer in self.model.children()]
         
         for layer in model:
             print(f"{type( layer )}" )
