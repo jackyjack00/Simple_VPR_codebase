@@ -62,8 +62,8 @@ class LightningModel(pl.LightningModule):
         self.loss_fn = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
 
     def forward(self, images):
-        dummy_desrciptors = self.model_without_pooling (images)
-        print(f"\n\ntruncated model result size: {dummy_descriptors.size()}")
+        dummy_desrciptors = self.model_without_pooling(images)
+        print(f"\n\ntruncated model result size: {dummy_desrciptors.size()}")
         descriptors = self.model(images)
         print(f"\n\n full model result size: {descriptors.size()}")
         return descriptors
