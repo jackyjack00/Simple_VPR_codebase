@@ -30,7 +30,7 @@ class LightningModel(pl.LightningModule):
         self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
         
         self.model_layers = list( self.model.children() )[:-2]
-        self.model_without_pooling = nn.Sequential( *[ _ for _ in self.model_layers ] )
+        self.model_without_pooling = torch.nn.Sequential( *[ _ for _ in self.model_layers ] )
         
         #  Change the model's pooling layer according to the command line parameter, "default" is avg_pooling
         if self.pooling_str == "gem":
