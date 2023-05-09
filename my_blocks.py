@@ -18,7 +18,9 @@ class GeMPooling(nn.Module):
         self.p.data.fill_(init_norm)
         # Define the avg_pooling layer, it takes in [n_batch, 512, 7, 7] and outputs [n_batch, 512, 1, 1]
         self.avg_pooling = nn.AvgPool2d((self.pool_size, self.pool_size))
+        # Parameter for clamp
         self.eps = eps
+        # Decide if perform final normalization or not
         self.normalize = normalize
 
     def forward(self, features):
@@ -133,10 +135,12 @@ class ProxyAccumulator:
         else:
             self.proxy_sum = tensor
             self.n = n
-        
+            
+    # Compute the average proxy representation of all the proxy accumulated
     def get_avg(self):
         return self.proxy_sum / self.n
-
+    
+    # Manually define how the "+" operation between ProxyAccumulator is done
     def __add__(self, other):
         return ProxyAccumulator(tensor = self.proxy_sum + other.proxy_sum, n = self.n + other.n)
 
@@ -152,7 +156,8 @@ class ProxyHead(nn.Module):
         # L2 norm of output
         out = F.normalize(out, p=2)
         return out
-    
+
+#TODO: initialize it in main and pass it to get_dataloaders (then pass it to dataloader batch_sampler) and to the model (bank_update() at end epoch)
 class ProxyBank():
     def __init__(self, batch_size , proxy_dim = 512):
         # Set the size of batches we want to generate
@@ -180,9 +185,28 @@ class ProxyBank():
             self.__index.add_with_id( proxy_acc.get_avg() , label )
                
     #TODO: understand once the index is complete how to generate the batches usefull for the sampler and how to pass the results to it
-    def proxy_sampler(self , batch_dim):
+    def batch_sampling(self , batch_dim):
         pass
-       
+
+#TODO: initialize this in get_dataloader and pass it to dataloader of train dataset as batch_sampler
+class ProxyBankBatchMiner(Sampler):
+    def __init__(self, dataset, batch_size, bank):
+        # Set dim of batch
+        self.batch_size = batch_size
+        # Compute the floor of the length of the iterable
+        self.iterable_size = len(dataset) // batch_size
+        # This is our ProxyBank, hopefully updated at the end of each epoch
+        self.bank = bank
+    
+    # Return an iterable over a list of groups of indeces (list of batches)
+    def __iter__(self):
+        #TODO: implement the generation of the iterable: a list of list bank.batch_sampling 
+        batches = self.bank.batch_sampling( self.batch_size )
+        return iter(batches)
+    
+    # Return the length of the generated iterable, the one over the batches
+    def __len__(self):
+        return self.iterable_size
 ########################################################################################################################################    
 
 import torch
