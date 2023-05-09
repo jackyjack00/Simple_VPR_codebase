@@ -29,9 +29,8 @@ class LightningModel(pl.LightningModule):
         # Use a pretrained model
         self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
         
-        self.model = list( self.model.children())
-        
-        for layer in model:
+        self.model_layers = list( self.model.children() )
+        for layer in self.model_layers:
             print(f"{type( layer )}" )
         
         #  Change the model's pooling layer according to the command line parameter, "default" is avg_pooling
