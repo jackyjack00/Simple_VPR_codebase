@@ -29,6 +29,11 @@ class LightningModel(pl.LightningModule):
         # Use a pretrained model
         self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
         
+        self.model = [ layer for layer in self.model.children()[:-2] ]
+        
+        for layer in model:
+            print(f"{type( layer ) }
+        
         #  Change the model's pooling layer according to the command line parameter, "default" is avg_pooling
         if self.pooling_str == "gem":
             self.model.avgpool = my_blocks.GeMPooling(feature_size = self.model.fc.in_features , pool_size = 7, init_norm = 3.0, eps = 1e-6, normalize = False)
