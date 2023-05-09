@@ -4,30 +4,34 @@ import torchvision.models
 
 class GeMPooling(nn.Module):
     def __init__(self, feature_size, pool_size=7, init_norm=3.0, eps=1e-6, normalize=False, **kwargs):
+        # Initialization of super class
         super(GeMPooling, self).__init__(**kwargs)
-        self.feature_size = feature_size  # Final layer channel size, the pow calc at -1 axis
+        # Final layer channel size, the pow calc at -1 axis
+        self.feature_size = feature_size
+        # Dimension to pool, if equal to h and w output will be 1 dim for each channel
         self.pool_size = pool_size
-        self.init_norm = init_norm
-        # Use a learnable parameter p to compute not the standard average but a generalized where data is ^p and the sum is rooted by p
+        # Use a learnable parameter p to compute not the standard average but a generalized one where data is ^p and the sum is rooted by p
         # We want to train a p for each channel of the result of CNN --> p has dim of last channel, then it is broadcasted to the img dimension
         self.p = torch.nn.Parameter(torch.ones(self.feature_size) * self.init_norm, requires_grad=True)
+        # Set starting value of parameter P 
+        self.init_norm = init_norm
         self.p.data.fill_(init_norm)
-        self.normalize = normalize
+        # Define the avg_pooling layer, it takes in [n_batch, 512, 7, 7] and outputs [n_batch, 512, 1, 1]
         self.avg_pooling = nn.AvgPool2d((self.pool_size, self.pool_size))
         self.eps = eps
+        self.normalize = normalize
 
     def forward(self, features):
         # Feature tensor size is [n_batch , n_channels ,H , W] , p tensor should be broadcastable to feature size
-        # First it substitues all values < eps with eps than it computes ^p
         # Features is [batch , 512 , 7 , 7] p is [512] so manually reshape it to manage the broadcasting
         my_p = self.p.reshape((512,1,1))
-        
-        # Put a min value possible in the tensor, then computes the "to the power of my_p"
+        # Put a min value possible in the tensor, then computes the "to the power of my_p (p broadcasted)"
         features = features.clamp(min=self.eps).pow(my_p)
-        # Standard avg pooling operation
+        # Standard avg pooling operation, takes in [n_batch, 512, 7, 7] and outputs [n_batch, 512, 1, 1]
         features = self.avg_pooling(features)
+        # Eliminates the uselss dimensions of 1, therefore from [n_batch, 512, 1, 1] to [n_batch, 512]
         features = torch.squeeze(features)
-        # Soot of power 1/p
+        # Root of power 1/p, this time broadcast is correctly done automatically
         features = torch.pow(features, (1.0 / self.p))
         
         # If you want to normalize output featurs to a unit vector 
