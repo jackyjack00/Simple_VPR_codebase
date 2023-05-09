@@ -32,7 +32,7 @@ class LightningModel(pl.LightningModule):
         self.model = [ layer for layer in self.model.children()[:-2] ]
         
         for layer in model:
-            print(f"{type( layer ) }
+            print(f"{type( layer ) )
         
         #  Change the model's pooling layer according to the command line parameter, "default" is avg_pooling
         if self.pooling_str == "gem":
