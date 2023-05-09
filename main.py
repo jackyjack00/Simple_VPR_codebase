@@ -1,4 +1,3 @@
-
 import torch
 import numpy as np
 import torchvision.models
@@ -16,31 +15,36 @@ import my_blocks
 
 class LightningModel(pl.LightningModule):
     def __init__(self, val_dataset, test_dataset, descriptors_dim=512, num_preds_to_save=0, save_only_wrong_preds=True , last_pooling_layer = "default", optimizer_str = "default"):
+        # Initialization of class pl.LightningModule, we hinerit from it
         super().__init__()
+        # Dataset Parameters
         self.val_dataset = val_dataset
         self.test_dataset = test_dataset
+        # Visualization Parameters
         self.num_preds_to_save = num_preds_to_save
         self.save_only_wrong_preds = save_only_wrong_preds
-        
-        #some architecture's parameters
+        # Architecture Parameters
         self.optimizer_str = optimizer_str.lower()
         self.pooling_str = last_pooling_layer.lower()
-        
-        # Use a pretrained model
+        # Use as backbone the Resnet18 pretrained on IMAGENET
         self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
         
+        # Very good code to unpack the resnet and play with it
+        #TODO: look if it is nicer to refactor the code by adding here the pooling layer
         #self.model_layers = list( self.model.children() )[:-2]
         #self.model_without_pooling = torch.nn.Sequential( *[ _ for _ in self.model_layers ] )
         
-        #  Change the model's pooling layer according to the command line parameter, "default" is avg_pooling
+        #  Change the model's pooling layer according to the command line parameter, "default" is avg_pooling of Resnet18
         if self.pooling_str == "gem":
             self.model.avgpool = my_blocks.GeMPooling(feature_size = self.model.fc.in_features , pool_size = 7, init_norm = 3.0, eps = 1e-6, normalize = False)
         elif self.pooling_str == "netvlad":
             #changed to a version found in prof repo
             self.model.avgpool = my_blocks.NetVLAD(num_clusters = 64, dim = self.model.fc.in_features)
         elif self.pooling_str == "mixvpr":
+            #TODO: lower dimension like 256, 4
             self.mixvpr_out_channels = 512
             self.mixvpr_out_rows = 4
+            # MixVPR works with an input of dimension [n_batch, 512, 7,7] == [n_batch, in_channels, in_h, in_w]
             self.model.avgpool = my_blocks.MixVPR( in_channels = self.model.fc.in_features, in_h = 7, in_w = 7, out_channels = self.mixvpr_out_channels , out_rows =  self.mixvpr_out_rows )
         
         # Change the output of the FC layer to the desired descriptors dimension
@@ -51,6 +55,7 @@ class LightningModel(pl.LightningModule):
             # MixVPR take as input the final activation map of dim [n_batch,512,7,7] and outputs a feature vector for each batch [n_batch, out_channels * out_rows]
             self.model.fc = torch.nn.Linear(self.mixvpr_out_channels * self.mixvpr_out_rows, descriptors_dim)
         else:
+            # Simply map the output of Resnet18 avg_pooling to a desired dimension
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
         
         # Set a miner
@@ -142,7 +147,7 @@ def get_datasets_and_dataloaders(args):
     )
     val_dataset = TestDataset(dataset_folder=args.val_path)
     test_dataset = TestDataset(dataset_folder=args.test_path)
-    #TODO: define a subclass of DataLoader that accept the ProxyBank to return batches
+    #TODO: define a subclass of BaychSampler that uses the ProxyBank to compute batches, pass it to train_dataloader
     train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
@@ -150,9 +155,10 @@ def get_datasets_and_dataloaders(args):
 
 
 if __name__ == '__main__':
+    # Parse the arguments
     args = parser.parse_arguments()
+    # Compute all the data related object
     train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader = get_datasets_and_dataloaders(args)
-  
     # Load the chekpoint if available or else rebuild it
     if args.ckpt_path is not None:
       model_args = {
