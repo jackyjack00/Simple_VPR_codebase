@@ -32,7 +32,7 @@ class LightningModel(pl.LightningModule):
         self.model_layers = list( self.model.children() )
         for layer in self.model_layers:
             if isinstance(layer , torch.nn.modules.container.Sequential):
-                sequential_layers = list( layer.childern() )
+                sequential_layers = list( layer.children() )
                 for inner_layer in sequential_layers:
                     print(f"{type( inner_layer )}" )
             else:
