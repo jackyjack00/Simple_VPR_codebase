@@ -31,7 +31,12 @@ class LightningModel(pl.LightningModule):
         
         self.model_layers = list( self.model.children() )
         for layer in self.model_layers:
-            print(f"{type( layer )}" )
+            if isinstance(layer , torch.nn.modules.container.Sequential) 
+                sequential_layers = list( layer.childern() )
+                for inner_layer in sequential_layers:
+                    print(f"{type( inner_layer )}" )
+            else:
+                print(f"{type( layer )}" )
         
         #  Change the model's pooling layer according to the command line parameter, "default" is avg_pooling
         if self.pooling_str == "gem":
