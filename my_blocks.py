@@ -169,6 +169,7 @@ class ProxyBank():
         self.__bank = {}
     
     #TODO: call at epoch_end
+    # Given the Proxies computed by ProxyHead and their lables you first popolate the ProxyBank, then you popolate the index for retrieval
     def update_bank(self, proxies, labels):
         # Iterate over each pair proxy-label where proxy is the result of projection done by ProxyHead
         for proxy, label in zip(proxies , labels):
@@ -186,6 +187,16 @@ class ProxyBank():
                
     #TODO: understand once the index is complete how to generate the batches usefull for the sampler and how to pass the results to it
     def batch_sampling(self , batch_dim):
+        #TODO: having the bank updated 
+        #   while places are available
+        #       extract from bank a random label-proxy related to a place
+        #       compute the batch_size_Nearest_Neighbours with faiss_index w.r.t. the extracted proxy
+        #       this will be a batch --> append in a list that collects them
+        #       remove all the already picked places from the index and the bank (no buono)
+        
+        
+        
+        #_, predictions = faiss_index.searh(queries_descriptors, max(RECALL_VALUES))
         pass
 
 #TODO: initialize this in get_dataloader and pass it to dataloader of train dataset as batch_sampler
