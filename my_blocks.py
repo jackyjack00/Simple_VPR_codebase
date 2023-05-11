@@ -124,6 +124,7 @@ import random
 import faiss 
 import torch
 import torch.nn as nn
+from torch.utils.data.sampler import Sampler
 
 class ProxyAccumulator:
     def __init__(self, tensor = None, n = 0, dim = 512):
