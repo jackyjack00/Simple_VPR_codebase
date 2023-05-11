@@ -44,7 +44,7 @@ class TrainDataset(Dataset):
         self.places_ids = sorted(list(self.dict_place_paths.keys()))
         self.total_num_images = sum([len(paths) for paths in self.dict_place_paths.values()])
 
-    def __getitem__(self, index):index}")
+    def __getitem__(self, index):
         print(f"\n\nInside __getitem__ { type(index) }\n{index}\n\n")
         place_id = self.places_ids[index]
         all_paths_from_place_id = self.dict_place_paths[place_id]
