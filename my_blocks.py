@@ -197,12 +197,12 @@ class ProxyBank():
             rand_bank_item = list( bank.items() )[rand_index]
             starting_proxy = rand_bank_item[1]
             # Compute the batch_size_Nearest_Neighbours with faiss_index w.r.t. the extracted proxy
-            distances, labels = self.__index.search( starting_proxy, batch_dim )
+            distances, batch_of_labels = self.__index.search( starting_proxy, batch_dim )
             # Add the new generated batch the one alredy created. KNN contains the starting proxy itself. Labels is the new Batch
-            batches.append( labels )
+            batches.append( batch_of_labels )
             # Remove all the already picked places from the index and the bank (no buono)
-            for key_to_del in labels:
-                del bank[ str( key_to_delete ) ]
+            for key_to_del in batch_of_labels:
+                del self.__bank[ str( key_to_delete ) ]
             ids_to_del = np.array( labels )
             self.__index.remove_ids( ids_to_del )
         """
@@ -228,8 +228,7 @@ class ProxyBankBatchMiner(Sampler):
         self.bank = bank
     
     # Return an iterable over a list of groups of indeces (list of batches)
-    def __iter__(self):
-        #TODO: implement the generation of the iterable: a list of list bank.batch_sampling 
+    def __iter__(self): 
         batches = self.bank.batch_sampling( self.batch_size )
         return iter(batches)
     
