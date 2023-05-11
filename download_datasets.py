@@ -8,7 +8,7 @@ their_URLS = {
 URLS = {
     "tokyo_xs": "https://drive.google.com/file/d/1nOJ_uHB1DqxL6rEDKYyZO6xJiZCy2pbX/view?usp=share_link",
     "sf_xs": "https://drive.google.com/file/d/1CbfHbZzu43rXwlaKQ3bANQtbIjSjzopl/view?usp=share_link",
-    "gsv_xs": "https://drive.google.com/file/d/1nOJ_uHB1DqxL6rEDKYyZO6xJiZCy2pbX/view?usp=share_link"
+    "gsv_xs": "https://drive.google.com/file/d/1Lp_FX-5fSV2jH0DoH-LLUuMvH1jlRD2d/view?usp=share_link"
 }
 
 import os
