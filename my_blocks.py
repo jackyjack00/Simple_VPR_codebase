@@ -120,6 +120,7 @@ class MixVPR(nn.Module):
         return x
     
 ########################################################################################################################################    
+import random
 import faiss 
 import torch
 import torch.nn as nn
@@ -159,17 +160,17 @@ class ProxyHead(nn.Module):
 
 #TODO: initialize it in main and pass it to get_dataloaders (then pass it to dataloader batch_sampler) and to the model (bank_update() at end epoch)
 class ProxyBank():
-    def __init__(self, batch_size , proxy_dim = 512):
-        # Set the size of batches we want to generate
-        self.batch_size = batch_size
-        # Initialize an index containing vectors of dim equals to the proxy, and wrap it in order to use user defined index (place labels)
+    def __init__(self, proxy_dim = 512):
+        # Initialize an index containing vectors of dim equals to the proxy
         self.__base_index = faiss.IndexFlatL2( proxy_dim )
+        # Wrap it in order to use user defined indeces (place labels)
         self.__index = faiss.IndexIDMap( self.__base_index )
         # Initialize a dictionary to summarize the proxy-place_label relation
         self.__bank = {}
     
     #TODO: call at epoch_end
-    # Given the Proxies computed by ProxyHead and their lables you first popolate the ProxyBank, then you popolate the index for retrieval
+    # Given the Proxies computed by ProxyHead and their lables
+    # You first popolate the ProxyBank and then popolate the index for retrieval
     def update_bank(self, proxies, labels):
         # Iterate over each pair proxy-label where proxy is the result of projection done by ProxyHead
         for proxy, label in zip(proxies , labels):
@@ -187,17 +188,34 @@ class ProxyBank():
                
     #TODO: understand once the index is complete how to generate the batches usefull for the sampler and how to pass the results to it
     def batch_sampling(self , batch_dim):
-        #TODO: having the bank updated 
-        #   while places are available
-        #       extract from bank a random label-proxy related to a place
-        #       compute the batch_size_Nearest_Neighbours with faiss_index w.r.t. the extracted proxy
-        #       this will be a batch --> append in a list that collects them
-        #       remove all the already picked places from the index and the bank (no buono)
+        batches = []
+        #TODO: check if bank is updated 
+        # While places are enough to generate the KNN
+        while len(self.bank) > batch_dim:
+            # Extract from bank a random label-proxy related to a place
+            rand_index = random.randint( 0 , len(self.__bank) - 1 )
+            rand_bank_item = list( bank.items() )[rand_index]
+            starting_proxy = rand_bank_item[1]
+            # Compute the batch_size_Nearest_Neighbours with faiss_index w.r.t. the extracted proxy
+            distances, labels = self.__index.search( starting_proxy, batch_dim )
+            # Add the new generated batch the one alredy created. KNN contains the starting proxy itself. Labels is the new Batch
+            batches.append( labels )
+            # Remove all the already picked places from the index and the bank (no buono)
+            for key_to_del in labels:
+                del bank[ str( key_to_delete ) ]
+            ids_to_del = np.array( labels )
+            self.__index.remove_ids( ids_to_del )
+        """
+        For the moment i think it could be a good idea not to consider the last elements bcause they would generate an uninformative 
+        batch: beeing the last elements in the index it is probable that they are very sparse in that space, 
+        therefore contraddicting the whole point of the proxy mining generated batches
         
-        
-        
-        #_, predictions = faiss_index.searh(queries_descriptors, max(RECALL_VALUES))
-        pass
+        # Generate the last batch with remaining keys
+        left_out_keys = list( self.__bank.keys() )
+        batches.append( left_out_keys )
+        """
+        # Output the batches
+        return batches 
 
 #TODO: initialize this in get_dataloader and pass it to dataloader of train dataset as batch_sampler
 class ProxyBankBatchMiner(Sampler):
