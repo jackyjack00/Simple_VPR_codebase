@@ -66,7 +66,7 @@ class LightningModel(pl.LightningModule):
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
             
         # Define ProxyHead if necessary
-        if self.bank not None:
+        if self.bank is not None:
             self.proxy_head = my_blocks.ProxyHead( descriptors_dim , proxy_dim )
         
         # Set a miner
@@ -109,7 +109,7 @@ class LightningModel(pl.LightningModule):
         # Feed forward the batch to the model
         descriptors, proxies = self(images)  # Here we are calling the method forward that we defined above
         # Update the bank
-        if self.bank not None:
+        if self.bank is not None:
             self.bank.update_bank(proxies , labels)
         # Call the loss_function we defined above  
         loss = self.loss_function(descriptors, labels)  
