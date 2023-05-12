@@ -14,12 +14,15 @@ from datasets.train_dataset import TrainDataset
 import my_blocks
 
 class LightningModel(pl.LightningModule):
-    def __init__(self, val_dataset, test_dataset, descriptors_dim=512, num_preds_to_save=0, save_only_wrong_preds=True , last_pooling_layer = "default", optimizer_str = "default"):
+    def __init__(self, val_dataset, test_dataset, descriptors_dim=512, num_preds_to_save=0, save_only_wrong_preds=True , last_pooling_layer = "default", optimizer_str = "default", bank = None, proxy_dim = 512):
         # Initialization of class pl.LightningModule, we hinerit from it
         super().__init__()
         # Dataset Parameters
         self.val_dataset = val_dataset
         self.test_dataset = test_dataset
+        # Proxy parameter
+        self.bank = bank
+        self.proxy_dim = proxy_dim
         # Visualization Parameters
         self.num_preds_to_save = num_preds_to_save
         self.save_only_wrong_preds = save_only_wrong_preds
@@ -28,7 +31,7 @@ class LightningModel(pl.LightningModule):
         self.pooling_str = last_pooling_layer.lower()
         # Use as backbone the Resnet18 pretrained on IMAGENET
         self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
-        
+ 
         # Very good code to unpack the resnet and play with it
         #TODO: look if it is nicer to refactor the code by adding here the pooling layer
         #self.model_layers = list( self.model.children() )[:-2]
@@ -47,16 +50,24 @@ class LightningModel(pl.LightningModule):
             # MixVPR works with an input of dimension [n_batch, 512, 7,7] == [n_batch, in_channels, in_h, in_w]
             self.model.avgpool = my_blocks.MixVPR( in_channels = self.model.fc.in_features, in_h = 7, in_w = 7, out_channels = self.mixvpr_out_channels , out_rows =  self.mixvpr_out_rows )
         
+        # Initialize output dim as the standard one of CNN
+        self.aggregator_out_dim = self.model.fc.in_features
         # Change the output of the FC layer to the desired descriptors dimension
         if self.pooling_str == "netvlad":
             # VLAD like architecture generates in_features*n_clusters outputs
-            self.model.fc = torch.nn.Linear(self.model.fc.in_features * 64 , descriptors_dim)
+            self.aggregator_out_dim = self.model.fc.in_features * 64
+            self.model.fc = torch.nn.Linear(self.aggregator_out_dim , descriptors_dim)
         elif self.pooling_str == "mixvpr":
             # MixVPR take as input the final activation map of dim [n_batch,512,7,7] and outputs a feature vector for each batch [n_batch, out_channels * out_rows]
-            self.model.fc = torch.nn.Linear(self.mixvpr_out_channels * self.mixvpr_out_rows, descriptors_dim)
+            self.aggregator_out_dim  = self.mixvpr_out_channels * self.mixvpr_out_rows
+            self.model.fc = torch.nn.Linear(self.aggregator_out_dim, descriptors_dim)
         else:
             # Simply map the output of Resnet18 avg_pooling to a desired dimension
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
+            
+        # Define ProxyHead if necessary
+        if self.bank not None:
+            self.proxy_head = my_blocks.ProxyHead( self.aggregator_out_dim , proxy_dim )
         
         # Set a miner
         # self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)
@@ -160,6 +171,8 @@ if __name__ == '__main__':
     # Compute all the data related object
     train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader = get_datasets_and_dataloaders(args)
     # Load the chekpoint if available or else rebuild it
+    proxy_dim = 512
+    bank = my_blocks.ProxyBank(proxy_dim)
     if args.ckpt_path is not None:
       model_args = {
         "val_dataset" : val_dataset,
