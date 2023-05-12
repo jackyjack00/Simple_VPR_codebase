@@ -167,7 +167,7 @@ def get_datasets_and_dataloaders(args, bank=None):
     # Define dataloaders, train one has with proxy and without proxy case
     if bank is not None:
         my_proxy_sampler = my_blocks.ProxyBankBatchMiner( train_dataset, args.batch_size , bank )
-        train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True, batch_sampler = my_proxy_sampler )
+        train_loader = DataLoader(dataset=train_dataset, batch_sampler = my_proxy_sampler, num_workers=args.num_workers, shuffle=True)
     else:
         train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
