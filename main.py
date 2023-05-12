@@ -67,7 +67,7 @@ class LightningModel(pl.LightningModule):
             
         # Define ProxyHead if necessary
         if self.bank not None:
-            self.proxy_head = my_blocks.ProxyHead( self.aggregator_out_dim , proxy_dim )
+            self.proxy_head = my_blocks.ProxyHead( descriptors_dim , proxy_dim )
         
         # Set a miner
         # self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)
@@ -79,7 +79,8 @@ class LightningModel(pl.LightningModule):
 
     def forward(self, images):
         descriptors = self.model(images)
-        return descriptors
+        proxies = self.proxy_head(descriptors)
+        return descriptors , proxies
 
     def configure_optimizers(self):
         if self.optimizer_str == "default":
