@@ -107,9 +107,12 @@ class LightningModel(pl.LightningModule):
         labels = labels.view(num_places * num_images_per_place)
 
         # Feed forward the batch to the model
-        descriptors, proxy = self(images)  # Here we are calling the method forward that we defined above
-        loss = self.loss_function(descriptors, labels)  # Call the loss_function we defined above
-        
+        descriptors, proxies = self(images)  # Here we are calling the method forward that we defined above
+        # Update the bank
+        if self.bank not None:
+            self.bank.update_bank(proxies , labels)
+        # Call the loss_function we defined above  
+        loss = self.loss_function(descriptors, labels)  
         self.log('loss', loss.item(), logger=True)
         return {'loss': loss}
 
@@ -145,12 +148,14 @@ class LightningModel(pl.LightningModule):
         self.log('R@1', recalls[0], prog_bar=False, logger=True)
         self.log('R@5', recalls[1], prog_bar=False, logger=True)
 
-def get_datasets_and_dataloaders(args):
+def get_datasets_and_dataloaders(args, bank=None):
+    # Define Transformation to apply
     train_transform = tfm.Compose([
         tfm.RandAugment(num_ops=3),
         tfm.ToTensor(),
         tfm.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
+    # Define Datasets
     train_dataset = TrainDataset(
         dataset_folder=args.train_path,
         img_per_place=args.img_per_place,
@@ -159,8 +164,12 @@ def get_datasets_and_dataloaders(args):
     )
     val_dataset = TestDataset(dataset_folder=args.val_path)
     test_dataset = TestDataset(dataset_folder=args.test_path)
-    #TODO: define a subclass of BaychSampler that uses the ProxyBank to compute batches, pass it to train_dataloader
-    train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+    # Define dataloaders, train one has with proxy and without proxy case
+    if bank not None
+        my_proxy_sampler = my_blocks.ProxyBankBatchMiner( train_dataset, args.batch_size , bank )
+        train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True, batch_sampler = my_proxy_sampler )
+    else:
+        train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
     return train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader
@@ -169,11 +178,13 @@ def get_datasets_and_dataloaders(args):
 if __name__ == '__main__':
     # Parse the arguments
     args = parser.parse_arguments()
-    # Compute all the data related object
-    train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader = get_datasets_and_dataloaders(args)
-    # Load the chekpoint if available or else rebuild it
+    # Define the bank
     proxy_dim = 512
     bank = my_blocks.ProxyBank(proxy_dim)
+    # Compute all the data related object
+    train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader = get_datasets_and_dataloaders(args, bank)
+    # Load the chekpoint if available or else rebuild it
+    
     if args.ckpt_path is not None:
       model_args = {
         "val_dataset" : val_dataset,
