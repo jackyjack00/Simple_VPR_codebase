@@ -192,7 +192,7 @@ class ProxyBank():
         batches = []
         #TODO: check if bank is updated 
         # While places are enough to generate the KNN
-        while len(self.bank) >= batch_dim:
+        while len(self.__bank) >= batch_dim:
             # Extract from bank a random label-proxy related to a place
             rand_index = random.randint( 0 , len(self.__bank) - 1 )
             rand_bank_item = list( bank.items() )[rand_index]
