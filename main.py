@@ -68,7 +68,6 @@ class LightningModel(pl.LightningModule):
             
         # Define ProxyHead if necessary
         if self.bank is not None:
-            print("Ciao, inizializzo il proxy")
             self.proxy_head = my_blocks.ProxyHead( descriptors_dim , proxy_dim )
         
         # Set a miner
