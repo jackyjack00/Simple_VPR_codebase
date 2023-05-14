@@ -26,7 +26,7 @@ def parse_arguments():
     parser.add_argument("--optimizer", type = str, default="default",
                         help="change the optimizer for the parameters update:\n'default'\n'Adam'\n'AdamW")
     
-    parser.add_argument("--proxy_batch_mining", type = str, default = None,
+    parser.add_argument("--proxy", type = str, default = None,
                         help="Set to True to enable the proxy mining operation to generate batches")
     
     # Visualizations parameters
