@@ -80,7 +80,10 @@ class LightningModel(pl.LightningModule):
 
     def forward(self, images):
         descriptors = self.model(images)
-        proxies = self.proxy_head(descriptors)
+        if bank is not None:
+            proxies = self.proxy_head(descriptors)
+        else:
+            proxies = None
         return descriptors , proxies
 
     def configure_optimizers(self):
