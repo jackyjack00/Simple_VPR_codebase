@@ -247,8 +247,8 @@ class ProxyBankBatchMiner(Sampler):
             random_indeces_perm = torch.randperm( len( self.dataset ) )
             # Generate a fixed size partitioning of indeces
             batches =  torch.split( random_indeces_perm , self.batch_size )
-            print(f"Random generated batches are {len(batches)}\nEach one of size {batches[0].size()}")
-            print( self.dataset[ batches[0][32] ] )
+            #print(f"Random generated batches are {len(batches)}\nEach one of size {batches[0].size()}")
+            #print( self.dataset[ batches[0][32] ] )
             batches_iterable = iter(batches)
             return batches_iterable
         # Epochs where Bank is informative, after epoch 0
