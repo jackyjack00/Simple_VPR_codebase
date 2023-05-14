@@ -235,8 +235,6 @@ class ProxyBankBatchMiner(Sampler):
         # This is our ProxyBank, hopefully updated at the end of each epoch
         self.bank = bank
         
-    def __random_sampling(self):
-        
     # Return an iterable over a list of groups of indeces (list of batches)
     def __iter__(self): 
         # Epoch 0 case
