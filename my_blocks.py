@@ -252,7 +252,14 @@ class ProxyBankBatchMiner(Sampler):
             
         print(f"\n\nThis is the returned elem of __iter__()\n{type(batches_iterable)}")
         for x in batches_iterable:
-            print(f"{type(x)}\t{x}")
+            if isinstance(x , int):
+                print(f"{type(x)}\t{x}")
+            else:
+                print(f"{type(x)}\t{x}")
+                for a in x:
+                    print(f"{type(a)}\t{a}")
+                    break
+
             break
             
         return batches_iterable
