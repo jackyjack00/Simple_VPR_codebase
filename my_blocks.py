@@ -241,13 +241,13 @@ class ProxyBankBatchMiner(Sampler):
     def __iter__(self): 
         # Epoch 0 case
         if self.is_first_epoch:
+            # Change flag, first epoch is done
             self.is_first_epoch = False
-            random_sampler = RandomSampler( self.dataset )
-            dataloader = DataLoader( self.dataset, batch_size = self.batch_size , shuffle = True)
-            batches_iterable = iter(dataloader)
-            for x in batches_iterable:
-                print(f"this is random generated: {type(x)}\t{x}")
-                break
+            # Generate a random order of the indeces of the dataset, inside the parentesis there is the len of the dataset
+            random_indeces_perm = torch.randperm( self.dataset.targets.size()[0] )
+            # Generate a fixed size partitioning of indeces
+            batches =  torch.split( random_indeces_perm , self.batch_size )
+            batches_iterable = iter(batches)
         # Epochs where Bank is informative, after epoch 0
         else:
             # Generate batches from ProxyBank
