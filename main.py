@@ -23,6 +23,7 @@ class LightningModel(pl.LightningModule):
         # Proxy parameter
         self.bank = bank
         self.proxy_dim = proxy_dim
+        print(f"\n\nBank is passed to model and is {self.bank} !!\n")
         # Visualization Parameters
         self.num_preds_to_save = num_preds_to_save
         self.save_only_wrong_preds = save_only_wrong_preds
@@ -170,6 +171,7 @@ def get_datasets_and_dataloaders(args, bank = None):
         # Define Proxy Sampler that uses ProxyBank
         my_proxy_sampler = my_blocks.ProxyBankBatchMiner( train_dataset, args.batch_size , bank )
         train_loader = DataLoader(dataset=train_dataset, batch_sampler = my_proxy_sampler, num_workers=args.num_workers)
+        print("\n\nProxySampler is created and passed as sampler to dataloader correctly!!\n")
     else:
         train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
@@ -182,6 +184,7 @@ if __name__ == '__main__':
     args = parser.parse_arguments()
     # Define the bank
     if args.proxy is not None:
+        print("\n\nProxy argument is working!!\n")
         proxy_dim = 512
         bank = my_blocks.ProxyBank(proxy_dim)
     else:
