@@ -244,7 +244,7 @@ class ProxyBankBatchMiner(Sampler):
             self.is_first_epoch = False
             random_sampler = RandomSampler( self.dataset )
             dataloader = DataLoader( self.dataset, batch_size = self.batch_size , shuffle = True)
-            batches_iterable = dataloader
+            batches_iterable = iter(dataloader)
             for x in batches_iterable:
                 print(f"this is random generated: {type(x)}\t{x}")
                 break
