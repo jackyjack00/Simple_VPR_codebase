@@ -249,7 +249,7 @@ class ProxyBankBatchMiner(Sampler):
             # Generate batches from ProxyBank
             batches = self.bank.batch_sampling( self.batch_size )
             batches_iterable = iter(batches)
-            print(f"\n\nThis is the returned elem of __iter__()\n{type batches_iterable}")
+            print(f"\n\nThis is the returned elem of __iter__()\n{type(batches_iterable)}")
         return batches_iterable
     
     # Return the length of the generated iterable, the one over the batches
