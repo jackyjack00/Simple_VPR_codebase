@@ -175,7 +175,9 @@ def get_datasets_and_dataloaders(args, bank = None):
         train_loader = DataLoader(dataset=train_dataset, batch_sampler = my_proxy_sampler, num_workers=args.num_workers)
         print("\n\nProxySampler is created and passed as sampler to dataloader correctly!!\n")
     else:
-        train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+        my_random_sampler = my_blocks.MyRandomSampler( train_dataset,  args.batch_size )
+        train_loader = DataLoader(dataset=train_dataset, batch_sampler = my_random_sampler, num_workers=args.num_workers)
+        #train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
     return train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader
