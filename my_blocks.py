@@ -125,6 +125,7 @@ import faiss
 import torch
 import torch.nn as nn
 from torch.utils.data.sampler import Sampler
+from torch.utils.data.sampler import RandomSampler
 
 class ProxyAccumulator:
     def __init__(self, tensor = None, n = 0, dim = 512):
@@ -173,6 +174,8 @@ class ProxyBank():
     # Given the Proxies computed by ProxyHead and their lables
     # You first popolate the ProxyBank and then popolate the index for retrieval
     def update_bank(self, proxies, labels):
+        # Reset the bank (hopefully this is called at each epoch end, otherwise this breaks the code)
+        self.__bank = {}
         # Iterate over each pair proxy-label where proxy is the result of projection done by ProxyHead
         for proxy, label in zip(proxies , labels):
             # Create or Update the content of the bank dictionary
@@ -221,17 +224,34 @@ class ProxyBank():
 #TODO: initialize this in get_dataloader and pass it to dataloader of train dataset as batch_sampler
 class ProxyBankBatchMiner(Sampler):
     def __init__(self, dataset, batch_size, bank):
+        # Epoch counter
+        self.is_first_epoch = True
+        # Save dataset
+        self.dataset = dataset
         # Set dim of batch
         self.batch_size = batch_size
         # Compute the floor of the length of the iterable
         self.iterable_size = len(dataset) // batch_size
         # This is our ProxyBank, hopefully updated at the end of each epoch
         self.bank = bank
-    
+        
+    def __random_sampling(self):
+        
     # Return an iterable over a list of groups of indeces (list of batches)
     def __iter__(self): 
-        batches = self.bank.batch_sampling( self.batch_size )
-        return iter(batches)
+        # Epoch 0 case
+        if self.is_first_epoch:
+            print(f"\n\nThis is first epoch --> RandomSampler\n")
+            self.is_first_epoch = False
+            random_sampler = RandomSampler( self.dataset )
+            batches_iterable = random_sampler.__iter__()
+        # Epochs where Bank is informative, after epoch 0
+        else:
+            print(f"\n\nThis is NOT first epoch --> ProxySampler\n")
+            # Generate batches from ProxyBank
+            batches = self.bank.batch_sampling( self.batch_size )
+            batches_iterable = iter(batches)
+        return batches_iterable
     
     # Return the length of the generated iterable, the one over the batches
     def __len__(self):
