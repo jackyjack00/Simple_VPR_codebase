@@ -239,7 +239,7 @@ class ProxyBankBatchMiner(Sampler):
     # Return an iterable over a list of groups of indeces (list of batches)
     def __iter__(self): 
         self.counter = self.counter + 1
-        print(f"\n\nHOW MANY TIMES ITER IS CALLED: {self.counter}"
+        print(f"\n\nHOW MANY TIMES ITER IS CALLED: {self.counter}")
         # Epoch 0 case
         if self.is_first_epoch:
             self.is_first_epoch = False
