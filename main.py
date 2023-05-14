@@ -149,7 +149,7 @@ class LightningModel(pl.LightningModule):
         self.log('R@1', recalls[0], prog_bar=False, logger=True)
         self.log('R@5', recalls[1], prog_bar=False, logger=True)
 
-def get_datasets_and_dataloaders(args, bank=None):
+def get_datasets_and_dataloaders(args, bank = None):
     # Define Transformation to apply
     train_transform = tfm.Compose([
         tfm.RandAugment(num_ops=3),
@@ -167,6 +167,7 @@ def get_datasets_and_dataloaders(args, bank=None):
     test_dataset = TestDataset(dataset_folder=args.test_path)
     # Define dataloaders, train one has with proxy and without proxy case
     if bank is not None:
+        # Define Proxy Sampler that uses ProxyBank
         my_proxy_sampler = my_blocks.ProxyBankBatchMiner( train_dataset, args.batch_size , bank )
         train_loader = DataLoader(dataset=train_dataset, batch_sampler = my_proxy_sampler, num_workers=args.num_workers)
     else:
@@ -180,8 +181,11 @@ if __name__ == '__main__':
     # Parse the arguments
     args = parser.parse_arguments()
     # Define the bank
-    proxy_dim = 512
-    bank = my_blocks.ProxyBank(proxy_dim)
+    if args.proxy is not None:
+        proxy_dim = 512
+        bank = my_blocks.ProxyBank(proxy_dim)
+    else:
+        bank = None
     # Compute all the data related object
     train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader = get_datasets_and_dataloaders(args, bank)
     # Load the chekpoint if available or else rebuild it
