@@ -259,6 +259,29 @@ class ProxyBankBatchMiner(Sampler):
     # Return the length of the generated iterable, the one over the batches
     def __len__(self):
         return self.iterable_size
+
+# A dummy class to understand how batch_sampler of DataLoader works
+class MyRandomSampler(Sampler):
+    def __init__(self, dataset, batch_size):
+        # Save dataset
+        self.dataset = dataset
+        # Set dim of batch
+        self.batch_size = batch_size
+        # Compute the floor of the length of the iterable
+        self.iterable_size = len(dataset) // batch_size
+        
+    # Return an iterable over a list of groups of indeces (list of batches_idx)
+    def __iter__(self): 
+        # Generate a random order of the indeces of the dataset, inside the parentesis there is the len of the dataset
+        random_indeces_perm = torch.randperm( len( self.dataset ) )
+        # Generate a fixed size partitioning of indeces
+        batches =  torch.split( random_indeces_perm , self.batch_size )
+        batches_iterable = iter(batches)
+        return batches_iterable
+    
+    # Return the length of the generated iterable, the one over the batches
+    def __len__(self):
+        return self.iterable_size
 ########################################################################################################################################    
 
 import torch
