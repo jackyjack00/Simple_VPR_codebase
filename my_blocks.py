@@ -224,6 +224,7 @@ class ProxyBank():
 #TODO: initialize this in get_dataloader and pass it to dataloader of train dataset as batch_sampler
 class ProxyBankBatchMiner(Sampler):
     def __init__(self, dataset, batch_size, bank):
+        self.counter = 0
         # Epoch counter
         self.is_first_epoch = True
         # Save dataset
@@ -237,32 +238,18 @@ class ProxyBankBatchMiner(Sampler):
         
     # Return an iterable over a list of groups of indeces (list of batches)
     def __iter__(self): 
+        self.counter = self.counter + 1
+        print(f"\n\nHOW MANY TIMES ITER IS CALLED: {self.counter}"
         # Epoch 0 case
         if self.is_first_epoch:
-            print(f"\n\nThis is first epoch --> RandomSampler\n")
             self.is_first_epoch = False
             random_sampler = RandomSampler( self.dataset )
             batches_iterable = random_sampler.__iter__()
         # Epochs where Bank is informative, after epoch 0
         else:
-            print(f"\n\nThis is NOT first epoch --> ProxySampler\n")
             # Generate batches from ProxyBank
             batches = self.bank.batch_sampling( self.batch_size )
             batches_iterable = iter(batches)
-            
-        print(f"\n\nThis is the returned elem of __iter__()\n{type(batches_iterable)}")
-        for x in batches_iterable:
-            if isinstance(x , int):
-                print(f"{type(x)}\t{x}")
-            else:
-                print("This is else; suppose to be result of ProxySampler")
-                print(f"{type(x)}\t{x}")
-                for a in x:
-                    print(f"{type(a)}\t{a}")
-                    break
-
-            break
-            
         return batches_iterable
     
     # Return the length of the generated iterable, the one over the batches
