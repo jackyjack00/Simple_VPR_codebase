@@ -244,7 +244,7 @@ class ProxyBankBatchMiner(Sampler):
             # Change flag, first epoch is done
             self.is_first_epoch = False
             # Generate a random order of the indeces of the dataset, inside the parentesis there is the len of the dataset
-            random_indeces_perm = torch.randperm( self.dataset.targets.size()[0] )
+            random_indeces_perm = torch.randperm( len( self.dataset ) )
             # Generate a fixed size partitioning of indeces
             batches =  torch.split( random_indeces_perm , self.batch_size )
             batches_iterable = iter(batches)
