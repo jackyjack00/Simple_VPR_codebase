@@ -255,6 +255,7 @@ class ProxyBankBatchMiner(Sampler):
             if isinstance(x , int):
                 print(f"{type(x)}\t{x}")
             else:
+                print("This is else; suppose to be result of ProxySampler")
                 print(f"{type(x)}\t{x}")
                 for a in x:
                     print(f"{type(a)}\t{a}")
