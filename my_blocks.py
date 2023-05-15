@@ -193,7 +193,7 @@ class ProxyBank():
         self.__index.reset()
         for label, proxy_acc in self.__bank.items():
             # Use get_avg() to go from accumulator to average and compute the global proxy for each place
-            self.__index.add_with_id( proxy_acc.get_avg() , label )
+            self.__index.add_with_ids( proxy_acc.get_avg().reshape(1,-1) , label )
     
     # Empty all the dictionaries and indeces created so far
     def reset(self):
