@@ -181,7 +181,7 @@ class ProxyBank():
             # From Tensor to int to be usable in dictionary as key
             label = int(label)
             # Create or Update the content of the bank dictionary
-            if label not in self.bank.keys():
+            if label not in self.__bank.keys():
                 self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 )
             else:
                 self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 ) + self.__bank[label]
