@@ -172,12 +172,9 @@ class ProxyBank():
         # Initialize a dictionary to summarize the proxy-place_label relation
         self.__bank = {}
     
-    #TODO: call at epoch_end
+    #TODO: call at each batch
     # Given the Proxies computed by ProxyHead and their lables
-    # You first popolate the ProxyBank and then popolate the index for retrieval
     def update_bank(self, proxies, labels):
-        # Reset the bank (hopefully this is called at each epoch end, otherwise this breaks the code)
-        self.__bank = {}
         # Iterate over each pair proxy-label where proxy is the result of projection done by ProxyHead
         for proxy, label in zip(proxies , labels):
             # Create or Update the content of the bank dictionary
@@ -186,14 +183,23 @@ class ProxyBank():
             else:
                 self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 ) + self.__bank[label]
     
+    #TODO: call at epoch_end
     #TODO: this is slow and memory intensive: there may be a code solution not to generate the whole list
+    # You first popolate the ProxyBank and then popolate the index for retrieval
     def update_index(self):
         for label, proxy_acc in self.__bank.items():
             # Override the index at each epoch. Do not stuck info from differet epoch (training should handle this aspect)
             self.__index.reset()
             # Use get_avg() to go from accumulator to average and compute the global proxy for each place
             self.__index.add_with_id( proxy_acc.get_avg() , label )
-               
+    
+    def reset(self):
+        del self.__bank
+        del self.__index
+        self.__bank = {}
+        self.__base_index = faiss.IndexFlatL2( proxy_dim )
+        self.__index = faiss.IndexIDMap( self.__base_index )
+    
     #TODO: understand once the index is complete how to generate the batches usefull for the sampler and how to pass the results to it
     def batch_sampling(self , batch_dim):
         batches = []
@@ -213,6 +219,7 @@ class ProxyBank():
                 del self.__bank[ str( key_to_delete ) ]
             ids_to_del = np.array( labels )
             self.__index.remove_ids( ids_to_del )
+        self.reset()
         """
         For the moment i think it could be a good idea not to consider the last elements bcause they would generate an uninformative 
         batch: beeing the last elements in the index it is probable that they are very sparse in that space, 
