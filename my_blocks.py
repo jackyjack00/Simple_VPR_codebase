@@ -222,7 +222,7 @@ class ProxyBank():
             batches.append( batch_of_labels )
             # Remove all the already picked places from the index and the bank (no buono)
             for key_to_del in batch_of_labels:
-                del self.__bank[ key_to_delete  ]
+                del self.__bank[ key_to_del ]
             self.__index.remove_ids( batch_of_labels )
         # Call a reset in order to fully empty the stored elements
         self.reset()
