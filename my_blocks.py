@@ -287,9 +287,13 @@ class MyRandomSampler(Sampler):
         self.batch_size = batch_size
         # Compute the floor of the length of the iterable
         self.iterable_size = len(dataset) // batch_size
+        ###
+        self.counter = 0
         
     # Return an iterable over a list of groups of indeces (list of batches_idx)
     def __iter__(self): 
+        self.counter = self.counter + 1
+        print(f"HOW MANY TIME AM I CALLED SO FAR {self.counter}")
         # Generate a random order of the indeces of the dataset, inside the parentesis there is the len of the dataset
         random_indeces_perm = torch.randperm( len( self.dataset ) )
         # Generate a fixed size partitioning of indeces
