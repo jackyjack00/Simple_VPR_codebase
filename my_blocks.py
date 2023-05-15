@@ -143,7 +143,7 @@ class ProxyAccumulator:
             
     # Compute the average proxy representation of all the proxy accumulated
     def get_avg(self):
-        return self.proxy_sum / self.n
+        return torch.Tensor( self.proxy_sum / self.n )
     
     # Manually define how the "+" operation between ProxyAccumulator is done
     def __add__(self, other):
