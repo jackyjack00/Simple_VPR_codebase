@@ -187,12 +187,11 @@ class ProxyBank():
                 self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 ) + self.__bank[label]
     
     #TODO: call at epoch_end
-    #TODO: this is slow and memory intensive: there may be a code solution not to generate the whole list
     # You first popolate the ProxyBank and then popolate the index for retrieval
     def update_index(self):
+        # Override the index at each epoch. Do not stuck info from differet epoch (training should handle this aspect)
+        self.__index.reset()
         for label, proxy_acc in self.__bank.items():
-            # Override the index at each epoch. Do not stuck info from differet epoch (training should handle this aspect)
-            self.__index.reset()
             # Use get_avg() to go from accumulator to average and compute the global proxy for each place
             self.__index.add_with_id( proxy_acc.get_avg() , label )
     
@@ -216,25 +215,17 @@ class ProxyBank():
             # Inside bank i have ProxyAccumulator --> get_avg gives me the Proxy
             starting_proxy = rand_bank_item[1].get_avg()
             # Compute the batch_size_Nearest_Neighbours with faiss_index w.r.t. the extracted proxy
-            distances, batch_of_labels = self.__index.search( starting_proxy, batch_dim )
+            distances, batch_of_labels = self.__index.search( starting_proxy.reshape(1,-1), batch_dim )
+            # Faiss return a row per query in a multidim np.array, extract the one row
+            batch_of_labels = batch_of_labels.flatten()
             # Add the new generated batch the one alredy created. KNN contains the starting proxy itself. Labels is the new Batch
             batches.append( batch_of_labels )
             # Remove all the already picked places from the index and the bank (no buono)
             for key_to_del in batch_of_labels:
                 del self.__bank[ key_to_delete  ]
-            ids_to_del = np.array( key_to_del )
-            self.__index.remove_ids( ids_to_del )
+            self.__index.remove_ids( batch_of_labels )
         # Call a reset in order to fully empty the stored elements
         self.reset()
-        """
-        For the moment i think it could be a good idea not to consider the last elements bcause they would generate an uninformative 
-        batch: beeing the last elements in the index it is probable that they are very sparse in that space, 
-        therefore contraddicting the whole point of the proxy mining generated batches
-        
-        # Generate the last batch with remaining keys
-        left_out_keys = list( self.__bank.keys() )
-        batches.append( left_out_keys )
-        """
         # Output the batches
         return batches 
 
@@ -255,23 +246,18 @@ class ProxyBankBatchMiner(Sampler):
     # Return an iterable over a list of groups of indeces (list of batches)
     def __iter__(self): 
         # Epoch 0 case
-        if self.is_first_epoch <= 1:
+        if self.is_first_epoch:
             # Change flag, first epoch is done
-            self.is_first_epoch = self.is_first_epoch + 1
+            self.is_first_epoch = False
             # Generate a random order of the indeces of the dataset, inside the parentesis there is the len of the dataset
             random_indeces_perm = torch.randperm( len( self.dataset ) )
             # Generate a fixed size partitioning of indeces
             batches =  torch.split( random_indeces_perm , self.batch_size )
-            #print(f"Random generated batches are {len(batches)}\nEach one of size {batches[0].size()}")
-            #print( self.dataset[ batches[0][32] ] )
-            print(f"Epoch 0:Do batches exist {type(batches)}, {len(batches)}")
             batches_iterable = iter(batches)
         # Epochs where Bank is informative, after epoch 0
         else:
-            self.is_first_epoch = self.is_first_epoch + 1
             # Generate batches from ProxyBank
             batches = self.bank.batch_sampling( self.batch_size )
-            print(f"Other Epochs: Do batches exist {type(batches)}, {len(batches)}")
             batches_iterable = iter(batches)
         return batches_iterable
     
