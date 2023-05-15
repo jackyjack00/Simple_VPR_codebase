@@ -233,7 +233,7 @@ class ProxyBank():
 class ProxyBankBatchMiner(Sampler):
     def __init__(self, dataset, batch_size, bank):
         # Epoch counter
-        self.is_first_epoch = 0
+        self.is_first_epoch = True
         # Save dataset
         self.dataset = dataset
         # Set dim of batch
