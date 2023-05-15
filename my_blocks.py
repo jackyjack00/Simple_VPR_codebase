@@ -193,7 +193,7 @@ class ProxyBank():
         self.__index.reset()
         for label, proxy_acc in self.__bank.items():
             # Use get_avg() to go from accumulator to average and compute the global proxy for each place
-            self.__index.add_with_ids( proxy_acc.get_avg().reshape(1,-1).cpu() , label )
+            self.__index.add_with_ids( proxy_acc.get_avg().reshape(1,-1).detach().numpy() , label )
     
     # Empty all the dictionaries and indeces created so far
     def reset(self):
@@ -215,7 +215,7 @@ class ProxyBank():
             # Inside bank i have ProxyAccumulator --> get_avg gives me the Proxy
             starting_proxy = rand_bank_item[1].get_avg()
             # Compute the batch_size_Nearest_Neighbours with faiss_index w.r.t. the extracted proxy
-            distances, batch_of_labels = self.__index.search( starting_proxy.reshape(1,-1).cpu(), batch_dim )
+            distances, batch_of_labels = self.__index.search( starting_proxy.reshape(1,-1).detach().numpy(), batch_dim )
             # Faiss return a row per query in a multidim np.array, extract the one row
             batch_of_labels = batch_of_labels.flatten()
             # Add the new generated batch the one alredy created. KNN contains the starting proxy itself. Labels is the new Batch
