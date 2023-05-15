@@ -242,24 +242,27 @@ class ProxyBankBatchMiner(Sampler):
         self.iterable_size = len(dataset) // batch_size
         # This is our ProxyBank, hopefully updated at the end of each epoch
         self.bank = bank
+        self.counter = 0
+        self.batch_iterable = []
         
     # Return an iterable over a list of groups of indeces (list of batches)
     def __iter__(self): 
         # Epoch 0 case
-        if self.is_first_epoch:
+        if self.is_first_epoch and self.counter % 2 == 0:
             # Change flag, first epoch is done
             self.is_first_epoch = False
             # Generate a random order of the indeces of the dataset, inside the parentesis there is the len of the dataset
             random_indeces_perm = torch.randperm( len( self.dataset ) )
             # Generate a fixed size partitioning of indeces
             batches =  torch.split( random_indeces_perm , self.batch_size )
-            batches_iterable = iter(batches)
+            self.batch_iterable = iter(batches)
         # Epochs where Bank is informative, after epoch 0
-        else:
+        elif self.counter % 2 == 0:
             # Generate batches from ProxyBank
             batches = self.bank.batch_sampling( self.batch_size )
-            batches_iterable = iter(batches)
-        return batches_iterable
+            self.batch_iterable = iter(batches)
+        self.counter += 1
+        return  self.batch_iterable
     
     # Return the length of the generated iterable, the one over the batches
     def __len__(self):
