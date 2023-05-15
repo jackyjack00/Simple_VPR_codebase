@@ -247,6 +247,7 @@ class ProxyBankBatchMiner(Sampler):
         
     # Return an iterable over a list of groups of indeces (list of batches)
     def __iter__(self): 
+        print(f"Counter : {self.counter}")
         # Epoch 0 case
         if self.is_first_epoch and self.counter % 2 == 0:
             # Change flag, first epoch is done
@@ -261,6 +262,7 @@ class ProxyBankBatchMiner(Sampler):
             # Generate batches from ProxyBank
             batches = self.bank.batch_sampling( self.batch_size )
             self.batch_iterable = iter(batches)
+        print(f"Counter : {self.counter}")
         self.counter += 1
         return  self.batch_iterable
     
