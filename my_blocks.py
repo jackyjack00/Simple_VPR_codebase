@@ -177,6 +177,8 @@ class ProxyBank():
     def update_bank(self, proxies, labels):
         # Iterate over each pair proxy-label where proxy is the result of projection done by ProxyHead
         for proxy, label in zip(proxies , labels):
+            # From Tensor to int to be usable in dictionary as key
+            label = int(label)
             # Create or Update the content of the bank dictionary
             if label not in self.bank.keys():
                 self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 )
@@ -193,6 +195,7 @@ class ProxyBank():
             # Use get_avg() to go from accumulator to average and compute the global proxy for each place
             self.__index.add_with_id( proxy_acc.get_avg() , label )
     
+    # Empty all the dictionaries and indeces created so far
     def reset(self):
         del self.__bank
         del self.__index
@@ -209,16 +212,18 @@ class ProxyBank():
             # Extract from bank a random label-proxy related to a place
             rand_index = random.randint( 0 , len(self.__bank) - 1 )
             rand_bank_item = list( bank.items() )[rand_index]
-            starting_proxy = rand_bank_item[1]
+            # Inside bank i have ProxyAccumulator --> get_avg gives me the Proxy
+            starting_proxy = rand_bank_item[1].get_avg()
             # Compute the batch_size_Nearest_Neighbours with faiss_index w.r.t. the extracted proxy
             distances, batch_of_labels = self.__index.search( starting_proxy, batch_dim )
             # Add the new generated batch the one alredy created. KNN contains the starting proxy itself. Labels is the new Batch
             batches.append( batch_of_labels )
             # Remove all the already picked places from the index and the bank (no buono)
             for key_to_del in batch_of_labels:
-                del self.__bank[ str( key_to_delete ) ]
-            ids_to_del = np.array( labels )
+                del self.__bank[ key_to_delete  ]
+            ids_to_del = np.array( key_to_del )
             self.__index.remove_ids( ids_to_del )
+        # Call a reset in order to fully empty the stored elements
         self.reset()
         """
         For the moment i think it could be a good idea not to consider the last elements bcause they would generate an uninformative 
