@@ -165,8 +165,9 @@ class ProxyHead(nn.Module):
 #TODO: initialize it in main and pass it to get_dataloaders (then pass it to dataloader batch_sampler) and to the model (bank_update() at end epoch)
 class ProxyBank():
     def __init__(self, proxy_dim = 512):
+        self.proxy_dim = proxy_dim
         # Initialize an index containing vectors of dim equals to the proxy
-        self.__base_index = faiss.IndexFlatL2( proxy_dim )
+        self.__base_index = faiss.IndexFlatL2( self.proxy_dim )
         # Wrap it in order to use user defined indeces (place labels)
         self.__index = faiss.IndexIDMap( self.__base_index )
         # Initialize a dictionary to summarize the proxy-place_label relation
