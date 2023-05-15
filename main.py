@@ -115,6 +115,7 @@ class LightningModel(pl.LightningModule):
         # Update the bank
         if self.bank is not None:
             self.bank.update_bank(proxies , labels)
+            #TODO: compute the loss of this module
         # Call the loss_function we defined above  
         loss = self.loss_function(descriptors, labels)  
         self.log('loss', loss.item(), logger=True)
@@ -139,6 +140,9 @@ class LightningModel(pl.LightningModule):
         return self.inference_epoch_end(all_descriptors, self.test_dataset, self.num_preds_to_save)
 
     def inference_epoch_end(self, all_descriptors, inference_dataset, num_preds_to_save=0):
+        # Update the bank index at the end of each epoch
+        if self.bank is not None:
+            self.bank.update_index()
         """all_descriptors contains database then queries descriptors"""
         all_descriptors = np.concatenate(all_descriptors)
         queries_descriptors = all_descriptors[inference_dataset.database_num : ]
