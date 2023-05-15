@@ -200,7 +200,7 @@ class ProxyBank():
         del self.__bank
         del self.__index
         self.__bank = {}
-        self.__base_index = faiss.IndexFlatL2( proxy_dim )
+        self.__base_index = faiss.IndexFlatL2( self.proxy_dim )
         self.__index = faiss.IndexIDMap( self.__base_index )
     
     #TODO: understand once the index is complete how to generate the batches usefull for the sampler and how to pass the results to it
