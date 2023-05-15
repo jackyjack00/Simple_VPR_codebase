@@ -212,7 +212,7 @@ class ProxyBank():
         while len(self.__bank) >= batch_dim:
             # Extract from bank a random label-proxy related to a place
             rand_index = random.randint( 0 , len(self.__bank) - 1 )
-            rand_bank_item = list( bank.items() )[rand_index]
+            rand_bank_item = list( self.__bank.items() )[rand_index]
             # Inside bank i have ProxyAccumulator --> get_avg gives me the Proxy
             starting_proxy = rand_bank_item[1].get_avg()
             # Compute the batch_size_Nearest_Neighbours with faiss_index w.r.t. the extracted proxy
