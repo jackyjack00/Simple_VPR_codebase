@@ -264,11 +264,13 @@ class ProxyBankBatchMiner(Sampler):
             batches =  torch.split( random_indeces_perm , self.batch_size )
             #print(f"Random generated batches are {len(batches)}\nEach one of size {batches[0].size()}")
             #print( self.dataset[ batches[0][32] ] )
+            print(f"Do batches exist {type(batches)}, {len(batches)}")
             batches_iterable = iter(batches)
         # Epochs where Bank is informative, after epoch 0
         else:
             # Generate batches from ProxyBank
             batches = self.bank.batch_sampling( self.batch_size )
+            print(f"Do batches exist {type(batches)}, {len(batches)}")
             batches_iterable = iter(batches)
         return batches_iterable
     
