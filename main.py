@@ -68,7 +68,10 @@ class LightningModel(pl.LightningModule):
             
         # Define ProxyHead if necessary
         if self.bank is not None:
+            # Define the PRoxyHead Layer
             self.proxy_head = my_blocks.ProxyHead( descriptors_dim , proxy_dim )
+            # Define an indipendent Loss for this Layer
+            self.loss_head = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
         
         # Set a miner
         # self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)
@@ -112,12 +115,17 @@ class LightningModel(pl.LightningModule):
 
         # Feed forward the batch to the model
         descriptors, proxies = self(images)  # Here we are calling the method forward that we defined above
-        # Update the bank
+        
+        # Call the loss_function of the main architecture  
+        loss = self.loss_function(descriptors, labels)
+        
+        # Update the bank and compute the loss for training the ProxyHead
         if self.bank is not None:
             self.bank.update_bank(proxies , labels)
-            #TODO: compute the loss of this module
-        # Call the loss_function we defined above  
-        loss = self.loss_function(descriptors, labels)  
+            loss_head = self.loss_head(proxies, labels)
+            loss = loss + loss_head
+        
+        # Log the result
         self.log('loss', loss.item(), logger=True)
         return {'loss': loss}
 
