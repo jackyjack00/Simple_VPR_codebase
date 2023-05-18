@@ -21,7 +21,7 @@ def parse_arguments():
                         help="dimensionality of the output descriptors")
     
     parser.add_argument("--pooling_layer", type = str, default="default",
-                        help="change the last pooling layer.Supported so far:\n'default'\n'GeM'\n'NetVLAD\n'patch_NetVLAD")
+                        help="change the last pooling layer.Supported so far:\n'default'\n'GeM'\nMixVPR")
     
     parser.add_argument("--optimizer", type = str, default="default",
                         help="change the optimizer for the parameters update:\n'default'\n'Adam'\n'AdamW")
