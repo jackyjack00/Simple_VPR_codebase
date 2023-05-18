@@ -256,13 +256,11 @@ class ProxyBankBatchMiner(Sampler):
             # Generate a fixed size partitioning of indeces
             batches =  torch.split( random_indeces_perm , self.batch_size )
             self.batch_iterable = iter(batches)
-            print(f"Counter : {self.counter}")
         # Epochs where Bank is informative, after epoch 0
         elif self.counter % 2 == 0:
             # Generate batches from ProxyBank
             batches = self.bank.batch_sampling( self.batch_size )
             self.batch_iterable = iter(batches)
-            print(f"Counter : {self.counter}")
         self.counter += 1
         return  self.batch_iterable
     
