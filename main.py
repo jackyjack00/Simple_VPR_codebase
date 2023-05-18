@@ -46,7 +46,7 @@ class LightningModel(pl.LightningModule):
             self.model.avgpool = my_blocks.NetVLAD(num_clusters = 64, dim = self.model.fc.in_features)
         elif self.pooling_str == "mixvpr":
             #TODO: lower dimension like 256, 4
-            self.mixvpr_out_channels = 512
+            self.mixvpr_out_channels = 256 #512
             self.mixvpr_out_rows = 4
             # MixVPR works with an input of dimension [n_batch, 512, 7,7] == [n_batch, in_channels, in_h, in_w]
             self.model.avgpool = my_blocks.MixVPR( in_channels = self.model.fc.in_features, in_h = 7, in_w = 7, out_channels = self.mixvpr_out_channels , out_rows =  self.mixvpr_out_rows )
