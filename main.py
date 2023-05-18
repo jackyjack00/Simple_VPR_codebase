@@ -23,7 +23,6 @@ class LightningModel(pl.LightningModule):
         # Proxy parameter
         self.bank = bank
         self.proxy_dim = proxy_dim
-        print(f"\n\nBank is passed to model and is {self.bank} !!\n")
         # Visualization Parameters
         self.num_preds_to_save = num_preds_to_save
         self.save_only_wrong_preds = save_only_wrong_preds
