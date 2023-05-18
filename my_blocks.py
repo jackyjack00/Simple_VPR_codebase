@@ -40,8 +40,29 @@ class GeMPooling(nn.Module):
         if self.normalize:
             features = F.normalize(features, dim=-1, p=2)
         return features
-
 ########################################################################################################################################
+class CosPlaceAggregator(nn.Module):
+    
+    def __init__ (self , in_dim , out_dim ):
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        self.gem = GeMPooling( feature_size = self.in_dim )
+        self.projector = nn.Linear( in_dim , out_dim )
+    
+    def forward(self , x):
+        # L2 normalization done on each feature map
+        x = F.normalize(x , p = 2.0 , dim = 1)
+        # Generalized Mean Pooling
+        x = self.gem( x )
+        # Flatten to [batch_size , 512]
+        x = x.flatten( dim = 1 )
+        # Change dimensionality from in_dim -> out_dim
+        x = self.projector( x )
+        # L2 Normalization done on the resulting feature vectors
+        x = F.normalize(x , p = 2.0 , dim = 1)
+        return x
+    
+#######################################################################################################################################
 import torch
 import torchvision
 import torch.nn as nn
@@ -103,19 +124,19 @@ class MixVPR(nn.Module):
         self.row_proj = nn.Linear(hw, out_rows)
 
     def forward(self, x):
-        # x is [n_batch, 512, 7, 7] and flattened to [n_batch, 512, 49] from now on we refer as h*w = 49 dimension as "row"
+        # x is [batch_ize, 512, 7, 7] and flattened to [batch_size, 512, 49] from now on we refer as h*w = 49 dimension as "row"
         x = x.flatten(2)
-        # mix layer preserves dimension, so it is still [n_batch, 512 , 49]
+        # mix layer preserves dimension, so it is still [batch_size, 512 , 49]
         x = self.mix(x)
-        # Change the order of last two dimension of x from [n_batch, 512 , 49] to [n_batch, 49, 512]
+        # Change the order of last two dimension of x from [batch_size, 512 , 49] to [batch_size, 49, 512]
         x = x.permute(0, 2, 1)
-        # Reduce dimensionality of channels via Linear Layer from [n_batch , 49, 512] to [n_batch, 49, out_channels]
+        # Reduce dimensionality of channels via Linear Layer from [batch_size , 49, 512] to [batch_size, 49, out_channels]
         x = self.channel_proj(x)
-        # Come back to original order of dimension [n_batch, out_channels, 49]
+        # Come back to original order of dimension [batch_size, out_channels, 49]
         x = x.permute(0, 2, 1)
-        # Reduce dimensionality of h*w called "row" via Linear Layer from [n_batch, out_channels, 49] to [n_batch, out_channels, out_rows]
+        # Reduce dimensionality of h*w called "row" via Linear Layer from [batch_size, out_channels, 49] to [batch_size, out_channels, out_rows]
         x = self.row_proj(x)
-        # Produces an output of shape [n_batch, out_channels*out_channels]
+        # Produces an output of shape [batch_size, out_channels*out_channels]
         x = F.normalize(x.flatten(1), p=2, dim=-1)
         return x
     
