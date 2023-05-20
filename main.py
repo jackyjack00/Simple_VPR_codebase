@@ -66,11 +66,11 @@ class LightningModel(pl.LightningModule):
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
             
         # Define ProxyHead if necessary
-        if self.bank is not None:
+        #if self.bank is not None:
             # Define the PRoxyHead Layer
-            self.proxy_head = my_blocks.ProxyHead( descriptors_dim , proxy_dim )
+        self.proxy_head = my_blocks.ProxyHead( descriptors_dim , proxy_dim )
             # Define an indipendent Loss for this Layer
-            self.loss_head = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
+        self.loss_head = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
         
         # Set a miner
         # self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)
