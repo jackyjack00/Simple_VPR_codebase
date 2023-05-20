@@ -213,7 +213,8 @@ if __name__ == '__main__':
         "val_dataset" : val_dataset,
         "test_dataset" : test_dataset,
         "last_pooling_layer" : args.pooling_layer,
-        "optimizer_str" : args.optimizer
+        "optimizer_str" : args.optimizer, 
+        "bank" : bank
         }
       model = LightningModel.load_from_checkpoint(args.ckpt_path, **model_args)
     else:
