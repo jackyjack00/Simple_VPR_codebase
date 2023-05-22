@@ -194,8 +194,6 @@ class ProxyBank():
         # Initialize a dictionary to summarize the proxy-place_label relation
         self.__bank = {}
         
-    
-    #TODO: call at each batch
     # Given the Proxies computed by ProxyHead and their lables
     def update_bank(self, proxies, labels):
         # Iterate over each pair proxy-label where proxy is the result of projection done by ProxyHead
@@ -250,7 +248,9 @@ class ProxyBank():
         # Output the batches
         return batches 
 
-#TODO: initialize this in get_dataloader and pass it to dataloader of train dataset as batch_sampler
+# Initialized in get_dataloader and passed to dataloader of train dataset as batch_sampler
+# At epoch 0 return random sampled minibatches
+# Next epochs it uses the bank to compute the batches
 class ProxyBankBatchMiner(Sampler):
     def __init__(self, dataset, batch_size, bank):
         # Epoch counter
@@ -264,13 +264,14 @@ class ProxyBankBatchMiner(Sampler):
         # This is our ProxyBank
         self.bank = bank
         # Workaround, because pytorch lightning call 2 times iter at each epoch
-        self.counter = 0
+        #self.counter = 0
         self.batch_iterable = []
         
     # Return an iterable over a list of groups of indeces (list of batches)
     def __iter__(self): 
         # Epoch 0 case
-        if self.is_first_epoch and self.counter % 2 == 0:
+        #if self.is_first_epoch and self.counter % 2 == 0:
+        if self.is_first_epoch:
             # Change flag, first epoch is done
             self.is_first_epoch = False
             # Generate a random order of the indeces of the dataset, inside the parentesis there is the len of the dataset
@@ -279,11 +280,12 @@ class ProxyBankBatchMiner(Sampler):
             batches =  torch.split( random_indeces_perm , self.batch_size )
             self.batch_iterable = iter(batches)
         # Epochs where Bank is informative, after epoch 0
-        elif self.counter % 2 == 0:
+        #elif self.counter % 2 == 0:
+        else:
             # Generate batches from ProxyBank
             batches = self.bank.batch_sampling( self.batch_size )
             self.batch_iterable = iter(batches)
-        self.counter += 1
+        #self.counter += 1
         return  self.batch_iterable
     
     # Return the length of the generated iterable, the one over the batches
