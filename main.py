@@ -109,12 +109,14 @@ class LightningModel(pl.LightningModule):
 
     # This is the training step that's executed at each iteration
     def training_step(self, batch, batch_idx):
+        """
         # Handle the reset of the bank exactly once at each start of an epoch 
         if self.bank is not None and self.epoch_is_starting :
             # Reset the bank
             self.bank.reset()
             # Ensure this code is executed only if is the first mini batch of the epoch
-            #self.epoch_is_starting = False
+            self.epoch_is_starting = False
+        """
         # Modify dataset dimension to have [all_images_in_batch, C, H, W]
         images, labels = batch
         num_places, num_images_per_place, C, H, W = images.shape
