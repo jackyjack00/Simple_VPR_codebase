@@ -23,6 +23,8 @@ class LightningModel(pl.LightningModule):
         # Proxy parameter
         self.bank = bank
         self.proxy_dim = proxy_dim
+        # Flag to handle corretly the reset of the bank, exactly once at each epoch start
+        self.epoch_is_starting = True
         # Visualization Parameters
         self.num_preds_to_save = num_preds_to_save
         self.save_only_wrong_preds = save_only_wrong_preds
@@ -107,6 +109,13 @@ class LightningModel(pl.LightningModule):
 
     # This is the training step that's executed at each iteration
     def training_step(self, batch, batch_idx):
+        # Handle the reset of the bank exactly once at each start of an epoch 
+        if self.bank is not None and self.epoch_is_starting :
+            # Reset the bank
+            self.bank.reset()
+            # Ensure this code is executed only if is the first mini batch of the epoch
+            self.epoch_is_starting = False
+        # Modify dataset dimension to have [all_images_in_batch, C, H, W]
         images, labels = batch
         num_places, num_images_per_place, C, H, W = images.shape
         images = images.view(num_places * num_images_per_place, C, H, W)
@@ -150,6 +159,9 @@ class LightningModel(pl.LightningModule):
         # Update the bank index at the end of each epoch
         if self.bank is not None:
             self.bank.update_index()
+        # Set the flag for the next epoch
+        self.epoch_is_starting = True
+        
         """all_descriptors contains database then queries descriptors"""
         all_descriptors = np.concatenate(all_descriptors)
         queries_descriptors = all_descriptors[inference_dataset.database_num : ]
