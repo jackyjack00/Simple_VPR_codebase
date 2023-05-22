@@ -193,6 +193,7 @@ class ProxyBank():
         self.__index = faiss.IndexIDMap( self.__base_index )
         # Initialize a dictionary to summarize the proxy-place_label relation
         self.__bank = {}
+        
     
     #TODO: call at each batch
     # Given the Proxies computed by ProxyHead and their lables
@@ -207,7 +208,6 @@ class ProxyBank():
             else:
                 self.__bank[label] = ProxyAccumulator( tensor = proxy , n = 1 ) + self.__bank[label]
     
-    #TODO: call at epoch_end
     # You first popolate the ProxyBank and then popolate the index for retrieval
     def update_index(self):
         # Override the index at each epoch. Do not stuck info from differet epoch (training should handle this aspect)
@@ -224,10 +224,9 @@ class ProxyBank():
         self.__base_index = faiss.IndexFlatL2( self.proxy_dim )
         self.__index = faiss.IndexIDMap( self.__base_index )
     
-    #TODO: understand once the index is complete how to generate the batches usefull for the sampler and how to pass the results to it
+    # Generates the batch using the information inside the bank: proxy that are near each other are sampled in the same batch
     def batch_sampling(self , batch_dim):
         batches = []
-        #TODO: check if bank is updated 
         # While places are enough to generate the KNN
         while len(self.__bank) >= batch_dim:
             # Extract from bank a random label-proxy related to a place
@@ -245,8 +244,9 @@ class ProxyBank():
             for key_to_del in batch_of_labels:
                 del self.__bank[ key_to_del ]
             self.__index.remove_ids( batch_of_labels )
+        #TODO: bring this at epoch start
         # Call a reset in order to fully empty the stored elements
-        self.reset()
+        # self.reset()
         # Output the batches
         return batches 
 
@@ -261,8 +261,9 @@ class ProxyBankBatchMiner(Sampler):
         self.batch_size = batch_size
         # Compute the floor of the length of the iterable
         self.iterable_size = len(dataset) // batch_size
-        # This is our ProxyBank, hopefully updated at the end of each epoch
+        # This is our ProxyBank
         self.bank = bank
+        # Workaround, because pytorch lightning call 2 times iter at each epoch
         self.counter = 0
         self.batch_iterable = []
         
@@ -298,8 +299,6 @@ class MyRandomSampler(Sampler):
         self.batch_size = batch_size
         # Compute the floor of the length of the iterable
         self.iterable_size = len(dataset) // batch_size
-        ###
-        self.counter = 0
         
     # Return an iterable over a list of groups of indeces (list of batches_idx)
     def __iter__(self): 
