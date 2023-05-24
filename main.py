@@ -206,7 +206,6 @@ def get_datasets_and_dataloaders(args, bank = None):
         # Define Proxy Sampler that uses ProxyBank
         my_proxy_sampler = my_blocks.ProxyBankBatchMiner( train_dataset, args.batch_size , bank )
         train_loader = DataLoader(dataset=train_dataset, batch_sampler = my_proxy_sampler, num_workers=args.num_workers)
-        print("\n\nProxySampler is created and passed as sampler to dataloader correctly!!\n")
     else:
         my_random_sampler = my_blocks.MyRandomSampler( train_dataset,  args.batch_size )
         train_loader = DataLoader(dataset=train_dataset, batch_sampler = my_random_sampler, num_workers=args.num_workers)
@@ -221,7 +220,6 @@ if __name__ == '__main__':
     args = parser.parse_arguments()
     # Define the bank
     if args.proxy is not None:
-        print("\n\nProxy argument is working!!\n")
         proxy_dim = 512
         bank = my_blocks.ProxyBank(proxy_dim)
     else:
