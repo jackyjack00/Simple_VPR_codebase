@@ -234,7 +234,7 @@ if __name__ == '__main__':
         "test_dataset" : test_dataset,
         "last_pooling_layer" : args.pooling_layer,
         "optimizer_str" : args.optimizer, 
-        "lr_scheduler_str" : arg.lr_scheduler, 
+        "lr_scheduler_str" : args.lr_scheduler, 
         "bank" : bank
         }
       model = LightningModel.load_from_checkpoint(args.ckpt_path, **model_args)
