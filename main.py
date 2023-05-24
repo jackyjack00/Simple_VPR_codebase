@@ -236,13 +236,15 @@ if __name__ == '__main__':
         "test_dataset" : test_dataset,
         "last_pooling_layer" : args.pooling_layer,
         "optimizer_str" : args.optimizer, 
+        "lr_scheduler_str" : arg.lr_scheduler, 
         "bank" : bank
         }
       model = LightningModel.load_from_checkpoint(args.ckpt_path, **model_args)
     else:
       model_args = {
         "last_pooling_layer" : args.pooling_layer,
-        "optimizer_str" : args.optimizer
+        "optimizer_str" : args.optimizer,
+        "lr_scheduler_str" : arg.lr_scheduler
         }
       model = LightningModel(val_dataset, test_dataset, args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds, bank = bank, **model_args)
     
