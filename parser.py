@@ -21,10 +21,13 @@ def parse_arguments():
                         help="dimensionality of the output descriptors")
     
     parser.add_argument("--pooling_layer", type = str, default="default",
-                        help="change the last pooling layer.Supported so far:\n'default'\n'GeM'\nMixVPR")
+                        help="change the last pooling layer.Supported so far:\n'default'\n'GeM'\n'MixVPR")
     
     parser.add_argument("--optimizer", type = str, default="default",
-                        help="change the optimizer for the parameters update:\n'default'\n'Adam'\n'AdamW")
+                        help="change the optimizer for the parameters update:\n'default'\n'Adam'\n'AdamW'\n'Nadam")
+    
+    parser.add_argument("--lr_scheduler", type = str, default="default",
+                        help="change the learning rate scheduler for the parameters update:'\n'Exponential'")
     
     parser.add_argument("--proxy", type = str, default = None,
                         help="Set to True to enable the proxy mining operation to generate batches")
