@@ -244,7 +244,7 @@ if __name__ == '__main__':
       model_args = {
         "last_pooling_layer" : args.pooling_layer,
         "optimizer_str" : args.optimizer,
-        "lr_scheduler_str" : arg.lr_scheduler
+        "lr_scheduler_str" : args.lr_scheduler
         }
       model = LightningModel(val_dataset, test_dataset, args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds, bank = bank, **model_args)
     
