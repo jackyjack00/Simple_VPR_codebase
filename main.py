@@ -14,7 +14,7 @@ from datasets.train_dataset import TrainDataset
 import my_blocks
 
 class LightningModel(pl.LightningModule):
-    def __init__(self, val_dataset, test_dataset, descriptors_dim=512, num_preds_to_save=0, save_only_wrong_preds=True , last_pooling_layer = "default", optimizer_str = "default", bank = None, proxy_dim = 512):
+    def __init__(self, val_dataset, test_dataset, descriptors_dim=512, num_preds_to_save=0, save_only_wrong_preds=True , last_pooling_layer = "default", optimizer_str = "default" , lr_scheduler_str = "default", bank = None, proxy_dim = 512):
         # Initialization of class pl.LightningModule, we hinerit from it
         super().__init__()
         # Dataset Parameters
@@ -30,6 +30,7 @@ class LightningModel(pl.LightningModule):
         self.save_only_wrong_preds = save_only_wrong_preds
         # Architecture Parameters
         self.optimizer_str = optimizer_str.lower()
+        self.lr_scheduler_str = lr_scheduler_str.lower()
         self.pooling_str = last_pooling_layer.lower()
         # Use as backbone the Resnet18 pretrained on IMAGENET
         self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
@@ -92,12 +93,19 @@ class LightningModel(pl.LightningModule):
 
     def configure_optimizers(self):
         if self.optimizer_str == "default":
-            optimizers = torch.optim.SGD(self.parameters(), lr=0.001, weight_decay=0.001, momentum=0.9)
+            optimizer = torch.optim.SGD(self.parameters(), lr=0.001, weight_decay=0.001, momentum=0.9)
         elif self.optimizer_str == "adam":
-            optimizers = torch.optim.Adam(self.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+            optimizer = torch.optim.Adam(self.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
         elif self.optimizer_str == "adamw":
-            optimizers = torch.optim.AdamW(self.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.01)
-        return optimizers
+            optimizer = torch.optim.AdamW(self.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.01)
+        elif  self.optimizer_str == "nadam":
+            optimizer = torch.optim.NAdam(self.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, momentum_decay=0.004)
+            
+        if self.lr_scheduler == "exponential" :
+            scheduler = [ torch.optim.lr_scheduler.ExponentialLR(optimizers, gamma = .95) ]
+        else :
+            scheduler = []
+        return [optimizer] , scheduler
 
     # The loss function call (this method will be called at each training iteration)
     def loss_function(self, descriptors, labels):
