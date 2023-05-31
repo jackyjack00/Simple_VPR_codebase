@@ -76,12 +76,12 @@ class LightningModel(pl.LightningModule):
         self.loss_head = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
         
         # Set a miner
-        # self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)
-        self.miner_fn = miners.MultiSimilarityMiner( epsilon=0.1 )
+        #self.miner_fn = miners.PairMarginMiner(pos_margin=0.0, neg_margin=0.2)
+        #self.miner_fn = miners.MultiSimilarityMiner( epsilon=0.1 )
         # Set the loss function
-        #self.loss_fn = losses.ContrastiveLoss(pos_margin=0, neg_margin=1)
+        self.loss_fn = losses.ContrastiveLoss(pos_margin=0.1, neg_margin=0.9)
         #self.loss_fn = losses.MultiSimilarityLoss( alpha=2, beta=50, base=0.5 )
-        self.loss_fn = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
+        #self.loss_fn = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
 
     def forward(self, images):
         descriptors = self.model(images)
