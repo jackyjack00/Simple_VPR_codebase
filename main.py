@@ -211,14 +211,14 @@ def get_datasets_and_dataloaders(args, bank = None):
     # Define dataloaders, train one has with proxy and without proxy case
     if bank is not None:
         # Define Proxy Sampler that uses ProxyBank
-        my_proxy_sampler = my_blocks.ProxyBankBatchMiner( train_dataset, args.batch_size , bank )
+        my_proxy_sampler = my_blocks.ProxyBankBatchMiner( train_dataset, args.batch_size , bank , num_workers = args.num_workers )
         train_loader = DataLoader(dataset=train_dataset, batch_sampler = my_proxy_sampler, num_workers=args.num_workers)
     else:
         my_random_sampler = my_blocks.MyRandomSampler( train_dataset,  args.batch_size )
         train_loader = DataLoader(dataset=train_dataset, batch_sampler = my_random_sampler, num_workers=args.num_workers)
         #train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
-    val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
-    test_loader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, num_workers=4, shuffle=False)
+    val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False)
+    test_loader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False)
     return train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader
 
 
