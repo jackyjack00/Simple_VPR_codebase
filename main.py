@@ -76,10 +76,11 @@ class LightningModel(pl.LightningModule):
         self.loss_head = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
         
         # Set a miner
-        self.miner_fn = miners.PairMarginMiner(pos_margin=0.1, neg_margin=0.9)
+        self.miner_fn = None
+        #self.miner_fn = miners.PairMarginMiner(pos_margin=0.1, neg_margin=0.9)
         #self.miner_fn = miners.MultiSimilarityMiner( epsilon=0.1 )
         # Set the loss function
-        self.loss_fn = losses.ContrastiveLoss(pos_margin=0.1, neg_margin=0.9)
+        self.loss_fn = losses.ContrastiveLoss(pos_margin=0.0, neg_margin=1)
         #self.loss_fn = losses.MultiSimilarityLoss( alpha=2, beta=50, base=0.5 )
         #self.loss_fn = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
 
@@ -109,10 +110,16 @@ class LightningModel(pl.LightningModule):
 
     # The loss function call (this method will be called at each training iteration)
     def loss_function(self, descriptors, labels):
-        # Include a miner for loss'pair selection
-        miner_output = self.miner_fn(descriptors , labels)
-        # Compute the loss using the loss function specified in __init__ and the miner output ?instead of all possible batch pairs?
-        loss = self.loss_fn(descriptors, labels, miner_output)
+        # Loss with miner
+        if self.miner_fn is not None:
+            # Compute the pairs to use in the loss using the miner function specified in __init__ 
+            miner_output = self.miner_fn(descriptors , labels)
+            # Compute the loss using the loss function specified in __init__ and the miner output
+            loss = self.loss_fn(descriptors, labels, miner_output)
+        # Loss without any miner
+        else:
+            # Compute the loss using the loss function specified in __init__
+            loss = self.loss_fn(descriptors, labels)
         return loss
 
     # This is the training step that's executed at each iteration
