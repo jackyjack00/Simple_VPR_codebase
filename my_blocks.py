@@ -252,7 +252,7 @@ class ProxyBank():
 # At epoch 0 return random sampled minibatches
 # Next epochs it uses the bank to compute the batches
 class ProxyBankBatchMiner(Sampler):
-    def __init__(self, dataset, batch_size, bank):
+    def __init__(self, dataset, batch_size, bank , num_workers = 1):
         # Epoch counter
         self.is_first_epoch = True
         # Save dataset
@@ -264,13 +264,14 @@ class ProxyBankBatchMiner(Sampler):
         # This is our ProxyBank
         self.bank = bank
         # Workaround, because pytorch lightning call 2 times iter at each epoch
+        self.num_workers = num_workers
         self.counter = 0
         self.batch_iterable = []
         
     # Return an iterable over a list of groups of indeces (list of batches)
     def __iter__(self): 
         # Epoch 0 case
-        if self.is_first_epoch and self.counter % 2 == 0:
+        if self.is_first_epoch and self.counter % self.num_workers == 0:
         #if self.is_first_epoch:
             # Change flag, first epoch is done
             self.is_first_epoch = False
@@ -280,7 +281,7 @@ class ProxyBankBatchMiner(Sampler):
             batches =  torch.split( random_indeces_perm , self.batch_size )
             self.batch_iterable = iter(batches)
         # Epochs where Bank is informative, after epoch 0
-        elif self.counter % 2 == 0:
+        elif self.counter % self.num_workers == 0:
         #else:
             # Generate batches from ProxyBank
             batches = self.bank.batch_sampling( self.batch_size )
