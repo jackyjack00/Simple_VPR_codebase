@@ -73,7 +73,8 @@ class LightningModel(pl.LightningModule):
             # Define the PRoxyHead Layer
         self.proxy_head = my_blocks.ProxyHead( descriptors_dim , proxy_dim )
             # Define an indipendent Loss for this Layer
-        self.loss_head = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
+        #self.loss_head = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
+        self.loss_head = losses.ContrastiveLoss(pos_margin=0.0, neg_margin=1)
         
         # Set a miner
         self.miner_fn = None
