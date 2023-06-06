@@ -77,7 +77,7 @@ class LightningModel(pl.LightningModule):
         #self.loss_head = losses.ContrastiveLoss(pos_margin=0.0, neg_margin=1)
         
         # Set a miner
-        #self.miner_fn = None
+        self.miner_fn = None
         #self.miner_fn = miners.TripletMarginMiner(margin=0.2, type_of_triplets="hard")
         #self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)
         #self.miner_fn = miners.MultiSimilarityMiner( epsilon=0.1 )
