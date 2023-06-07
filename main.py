@@ -57,7 +57,7 @@ class LightningModel(pl.LightningModule):
         self.aggregator_out_dim = self.model.fc.in_features
         # Change the output of the FC layer to the desired descriptors dimension
         if self.pooling_str == "cosplace":
-            self.aggregator_out_dim = descriptor_dim
+            self.aggregator_out_dim = descriptors_dim
             self.model.fc = torch.nn.Linear(self.aggregator_out_dim , descriptors_dim)
         elif self.pooling_str == "mixvpr":
             # MixVPR take as input the final activation map of dim [n_batch,512,7,7] and outputs a feature vector for each batch [n_batch, out_channels * out_rows]
