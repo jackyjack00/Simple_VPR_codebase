@@ -41,6 +41,7 @@ class GeMPooling(nn.Module):
 class CosPlaceAggregator(nn.Module):
     
     def __init__ (self , in_dim , out_dim ):
+        super(CosPlaceAggregator,self).__init__()
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.gem = GeMPooling( feature_size = self.in_dim )
