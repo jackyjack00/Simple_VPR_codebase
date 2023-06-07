@@ -53,7 +53,7 @@ class CosPlaceAggregator(nn.Module):
         # Generalized Mean Pooling
         x = self.gem( x )
         # Flatten to [batch_size , 512]
-        x = x.flatten( dim = 1 )
+        x = x.flatten( 1 )
         # Change dimensionality from in_dim -> out_dim
         x = self.projector( x )
         # L2 Normalization done on the resulting feature vectors
