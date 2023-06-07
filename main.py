@@ -43,22 +43,21 @@ class LightningModel(pl.LightningModule):
         #  Change the model's pooling layer according to the command line parameter, "default" is avg_pooling of Resnet18
         if self.pooling_str == "gem":
             self.model.avgpool = my_blocks.GeMPooling(feature_size = self.model.fc.in_features , pool_size = 7, init_norm = 3.0, eps = 1e-6, normalize = False)
-        elif self.pooling_str == "netvlad":
+        elif self.pooling_str == "cosplace":
             #changed to a version found in prof repo
-            self.model.avgpool = my_blocks.NetVLAD(num_clusters = 64, dim = self.model.fc.in_features)
+            self.model.avgpool = my_blocks.CosPlaceAggregator( in_dim = self.model.fc.in_features , out_dim = descriptors_dim)
         elif self.pooling_str == "mixvpr":
-            #TODO: lower dimension like 256, 4
-            self.mixvpr_out_channels = 256 #512
+            #lowered dimensions to 256, 4 from 512, 1
+            self.mixvpr_out_channels = 256 
             self.mixvpr_out_rows = 4
-            # MixVPR works with an input of dimension [n_batch, 512, 7,7] == [n_batch, in_channels, in_h, in_w]
+            # MixVPR works with an input of dimension [batch_size, 512, 7,7] == [batch_size, in_channels, in_h, in_w]
             self.model.avgpool = my_blocks.MixVPR( in_channels = self.model.fc.in_features, in_h = 7, in_w = 7, out_channels = self.mixvpr_out_channels , out_rows =  self.mixvpr_out_rows )
         
         # Initialize output dim as the standard one of CNN
         self.aggregator_out_dim = self.model.fc.in_features
         # Change the output of the FC layer to the desired descriptors dimension
-        if self.pooling_str == "netvlad":
-            # VLAD like architecture generates in_features*n_clusters outputs
-            self.aggregator_out_dim = self.model.fc.in_features * 64
+        if self.pooling_str == "cosplace":
+            self.aggregator_out_dim = descriptor_dim
             self.model.fc = torch.nn.Linear(self.aggregator_out_dim , descriptors_dim)
         elif self.pooling_str == "mixvpr":
             # MixVPR take as input the final activation map of dim [n_batch,512,7,7] and outputs a feature vector for each batch [n_batch, out_channels * out_rows]
@@ -68,11 +67,9 @@ class LightningModel(pl.LightningModule):
             # Simply map the output of Resnet18 avg_pooling to a desired dimension
             self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
             
-        # Define ProxyHead if necessary
-        #if self.bank is not None:
-            # Define the PRoxyHead Layer
+        # Define the ProxyHead Layer
         self.proxy_head = my_blocks.ProxyHead( descriptors_dim , proxy_dim )
-            # Define an indipendent Loss for this Layer
+        # Define an indipendent Loss for this Layer
         self.loss_head = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
         #self.loss_head = losses.ContrastiveLoss(pos_margin=0.0, neg_margin=1)
         
@@ -127,14 +124,6 @@ class LightningModel(pl.LightningModule):
 
     # This is the training step that's executed at each iteration
     def training_step(self, batch, batch_idx):
-        """
-        # Handle the reset of the bank exactly once at each start of an epoch 
-        if self.bank is not None and self.epoch_is_starting :
-            # Reset the bank
-            self.bank.reset()
-            # Ensure this code is executed only if is the first mini batch of the epoch
-            self.epoch_is_starting = False
-        """
         # Modify dataset dimension to have [all_images_in_batch, C, H, W]
         images, labels = batch
         num_places, num_images_per_place, C, H, W = images.shape
@@ -179,8 +168,6 @@ class LightningModel(pl.LightningModule):
         # Update the bank index at the end of each epoch
         if self.bank is not None:
             self.bank.update_index()
-        # Set the flag for the next epoch
-        #self.epoch_is_starting = True
         
         """all_descriptors contains database then queries descriptors"""
         all_descriptors = np.concatenate(all_descriptors)
