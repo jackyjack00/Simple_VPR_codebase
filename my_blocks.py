@@ -12,10 +12,7 @@ class GeMPooling(nn.Module):
         self.pool_size = pool_size
         # Use a learnable parameter p to compute not the standard average but a generalized one where data is ^p and the sum is rooted by p
         # We want to train a p for each channel of the result of CNN --> p has dim of last channel, then it is broadcasted to the img dimension
-        self.p = torch.nn.Parameter(torch.ones(self.feature_size) * self.init_norm, requires_grad=True)
-        # Set starting value of parameter P 
-        self.init_norm = init_norm
-        self.p.data.fill_(init_norm)
+        self.p = torch.nn.Parameter(torch.ones(self.feature_size) * init_norm, requires_grad=True)
         # Define the avg_pooling layer, it takes in [n_batch, 512, 7, 7] and outputs [n_batch, 512, 1, 1]
         self.avg_pooling = nn.AvgPool2d((self.pool_size, self.pool_size))
         # Parameter for clamp
