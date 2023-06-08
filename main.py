@@ -58,15 +58,18 @@ class LightningModel(pl.LightningModule):
         # Change the output of the FC layer to the desired descriptors dimension
         if self.pooling_str == "cosplace":
             self.aggregator_out_dim = descriptors_dim
-            self.model.fc = torch.nn.Linear(self.aggregator_out_dim , descriptors_dim)
+            self.model.fc = torch.nn.Sequential( torch.nn.Dropout( p = 0.2 ) \
+                                                 torch.nn.Linear(self.aggregator_out_dim , descriptors_dim) )
         elif self.pooling_str == "mixvpr":
             # MixVPR take as input the final activation map of dim [n_batch,512,7,7] and outputs a feature vector for each batch [n_batch, out_channels * out_rows]
             self.aggregator_out_dim  = self.mixvpr_out_channels * self.mixvpr_out_rows
-            self.model.fc = torch.nn.Linear(self.aggregator_out_dim, descriptors_dim)
+            self.model.fc = torch.nn.Sequential( torch.nn.Dropout( p = 0.2 ) \
+                                                 torch.nn.Linear(self.aggregator_out_dim, descriptors_dim) )
         else:
             # Simply map the output of Resnet18 avg_pooling to a desired dimension
-            self.model.fc = torch.nn.Linear(self.model.fc.in_features, descriptors_dim)
-            
+            self.model.fc = torch.nn.Sequential( torch.nn.Dropout( p = 0.2 ) \
+                                                 torch.nn.Linear(self.model.fc.in_features, descriptors_dim) )
+                                                
         # Define the ProxyHead Layer
         self.proxy_head = my_blocks.ProxyHead( descriptors_dim , proxy_dim )
         # Define an indipendent Loss for this Layer
@@ -74,15 +77,15 @@ class LightningModel(pl.LightningModule):
         #self.loss_head = losses.ContrastiveLoss(pos_margin=0.0, neg_margin=1)
         
         # Set a miner
-        self.miner_fn = None
+        #self.miner_fn = None
         #self.miner_fn = miners.TripletMarginMiner(margin=0.2, type_of_triplets="hard")
         #self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)
-        #self.miner_fn = miners.MultiSimilarityMiner( epsilon=0.1 )
+        self.miner_fn = miners.MultiSimilarityMiner( epsilon=0.1 )
         # Set the loss function
-        self.loss_fn = losses.ContrastiveLoss(pos_margin=0.0, neg_margin=1)
+        #self.loss_fn = losses.ContrastiveLoss(pos_margin=0.0, neg_margin=1)
         #self.loss_fn = losses.TripletMarginLoss(margin=0.05)
         #self.loss_fn = losses.MultiSimilarityLoss( alpha=2, beta=50, base=0.5 )
-        #self.loss_fn = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
+        self.loss_fn = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
 
     def forward(self, images):
         descriptors = self.model(images)
