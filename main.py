@@ -58,16 +58,16 @@ class LightningModel(pl.LightningModule):
         # Change the output of the FC layer to the desired descriptors dimension
         if self.pooling_str == "cosplace":
             self.aggregator_out_dim = descriptors_dim
-            self.model.fc = torch.nn.Sequential( torch.nn.Dropout( p = 0.2 ) \
+            self.model.fc = torch.nn.Sequential( torch.nn.Dropout( p = 0.8 ) \
                                                  torch.nn.Linear(self.aggregator_out_dim , descriptors_dim) )
         elif self.pooling_str == "mixvpr":
             # MixVPR take as input the final activation map of dim [n_batch,512,7,7] and outputs a feature vector for each batch [n_batch, out_channels * out_rows]
             self.aggregator_out_dim  = self.mixvpr_out_channels * self.mixvpr_out_rows
-            self.model.fc = torch.nn.Sequential( torch.nn.Dropout( p = 0.2 ) \
+            self.model.fc = torch.nn.Sequential( torch.nn.Dropout( p = 0.8 ) \
                                                  torch.nn.Linear(self.aggregator_out_dim, descriptors_dim) )
         else:
             # Simply map the output of Resnet18 avg_pooling to a desired dimension
-            self.model.fc = torch.nn.Sequential( torch.nn.Dropout( p = 0.2 ) \
+            self.model.fc = torch.nn.Sequential( torch.nn.Dropout( p = 0.8 ) \
                                                  torch.nn.Linear(self.model.fc.in_features, descriptors_dim) )
                                                 
         # Define the ProxyHead Layer
