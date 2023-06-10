@@ -74,7 +74,7 @@ class FeatureMixerLayer(nn.Module):
         # Mixer Inner Structure: Norm , Linear , ReLu, Linear
         self.mix = nn.Sequential(
             nn.LayerNorm(in_dim),
-            nn.Dropout( 0.5 ),
+            nn.Dropout( p = 0.5 ),
             nn.Linear(in_dim, int(in_dim * mlp_ratio)),
             nn.ReLU(),
             nn.Linear(int(in_dim * mlp_ratio), in_dim),
