@@ -184,6 +184,7 @@ class LightningModel(pl.LightningModule):
 
 def get_datasets_and_dataloaders(args, bank = None):
     # Define Transformation to apply
+    #TODO: augment contrast
     train_transform = tfm.Compose([
         tfm.RandAugment(num_ops=3),
         tfm.ToTensor(),
