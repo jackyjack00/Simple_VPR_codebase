@@ -181,6 +181,9 @@ class LightningModel(pl.LightningModule):
         print(recalls_str)
         self.log('R@1', recalls[0], prog_bar=False, logger=True)
         self.log('R@5', recalls[1], prog_bar=False, logger=True)
+        #added
+        self.log('R@10', recalls[2], prog_bar=False, logger=True)
+        self.log('R@20', recalls[3], prog_bar=False, logger=True)
 
 def get_datasets_and_dataloaders(args, bank = None):
     # Define Transformation to apply
