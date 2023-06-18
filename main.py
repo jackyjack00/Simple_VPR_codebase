@@ -179,8 +179,8 @@ class LightningModel(pl.LightningModule):
             trainer.logger.log_dir, num_preds_to_save, self.save_only_wrong_preds
         )
         print(recalls_str)
-        self.log('R@1', recalls[0], prog_bar=False, logger=True)
-        self.log('R@5', recalls[1], prog_bar=False, logger=True)
+        self.log('R@01', recalls[0], prog_bar=False, logger=True)
+        self.log('R@05', recalls[1], prog_bar=False, logger=True)
         #added
         self.log('R@10', recalls[2], prog_bar=False, logger=True)
         self.log('R@20', recalls[3], prog_bar=False, logger=True)
