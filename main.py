@@ -183,8 +183,8 @@ class LightningModel(pl.LightningModule):
         self.log('R@01', recalls[0], prog_bar=False, logger=True)
         self.log('R@05', recalls[1], prog_bar=False, logger=True)
         #added
-        #self.log('R@10', recalls[2], prog_bar=False, logger=True)
-        #self.log('R@20', recalls[3], prog_bar=False, logger=True)
+        self.log('R@10', recalls[2], prog_bar=False, logger=True)
+        self.log('R@20', recalls[3], prog_bar=False, logger=True)
 
 def get_datasets_and_dataloaders(args, bank = None):
     # Define Transformation to apply
@@ -259,7 +259,7 @@ if __name__ == '__main__':
     
     # Model params saving using Pytorch Lightning. Save the best 3 models according to Recall@1
     checkpoint_cb = ModelCheckpoint(
-        monitor='R@1',
+        monitor='R@01',
         filename='_epoch({epoch:02d})_step({step:04d})_R@1[{val/R@1:.4f}]_R@5[{val/R@5:.4f}]',
         auto_insert_metric_name=False,
         save_weights_only=True,
