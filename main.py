@@ -14,7 +14,7 @@ from datasets.train_dataset import TrainDataset
 import my_blocks
 
 class LightningModel(pl.LightningModule):
-    def __init__(self, val_dataset, test_dataset, descriptors_dim=512, num_preds_to_save=0, save_only_wrong_preds=True , last_pooling_layer = "default", optimizer_str = "default" , lr_scheduler_str = "default", bank = None, proxy_dim = 512):
+    def __init__(self, val_dataset, test_dataset, descriptors_dim=512, num_preds_to_save=0, save_only_wrong_preds=True , loss_str = "contrastive" , last_pooling_layer = "default", optimizer_str = "default" , lr_scheduler_str = "default", bank = None, proxy_dim = 512):
         # Initialization of class pl.LightningModule, we hinerit from it
         super().__init__()
         # Dataset Parameters
@@ -32,6 +32,7 @@ class LightningModel(pl.LightningModule):
         self.optimizer_str = optimizer_str.lower()
         self.lr_scheduler_str = lr_scheduler_str.lower()
         self.pooling_str = last_pooling_layer.lower()
+        self.loss_str = loss_str.lower()
         # Use as backbone the Resnet18 pretrained on IMAGENET
         self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
  
@@ -71,19 +72,19 @@ class LightningModel(pl.LightningModule):
         self.proxy_head = my_blocks.ProxyHead( descriptors_dim , proxy_dim )
         # Define an indipendent Loss for this Layer
         self.loss_head = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
-        #self.loss_head = losses.ContrastiveLoss(pos_margin=0.0, neg_margin=1)
         
-        # Set a miner
-        #self.miner_fn = None
-        #self.miner_fn = miners.TripletMarginMiner(margin=0.2, type_of_triplets="hard")
-        #self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)
-        self.miner_fn = miners.MultiSimilarityMiner( epsilon=0.1 )
-        # Set the loss function
-        #self.loss_fn = losses.ContrastiveLoss(pos_margin=0.0, neg_margin=1)
-        #self.loss_fn = losses.TripletMarginLoss(margin=0.05)
-        #self.loss_fn = losses.MultiSimilarityLoss( alpha=2, beta=50, base=0.5 )
-        self.loss_fn = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
-
+        # Set a loss and its within batch online miner, following command line parameters
+        if self.loss_str == "contrastive:
+            self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)
+            self.loss_fn = losses.ContrastiveLoss(pos_margin=0.0, neg_margin=1)
+        elif self.loss_str == "triplet":
+            self.miner_fn = miners.TripletMarginMiner(margin=0.2, type_of_triplets="hard")
+            self.loss_fn = losses.TripletMarginLoss(margin=0.05)
+        elif self.loss_str == "multisimilarity":
+            self.miner_fn = miners.MultiSimilarityMiner( epsilon=0.1 )
+            self.loss_fn = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.5 )
+        
+   
     def forward(self, images):
         descriptors = self.model(images)
         if bank is not None:
@@ -210,25 +211,32 @@ def get_datasets_and_dataloaders(args, bank = None):
     else:
         my_random_sampler = my_blocks.MyRandomSampler( train_dataset,  args.batch_size )
         train_loader = DataLoader(dataset=train_dataset, batch_sampler = my_random_sampler, num_workers=args.num_workers)
-        #train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False)
     return train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader
 
 
+##############################################################################################################################################################################
+##############################################################################################################################################################################
+##############################################################################################################################################################################
+##############################################################################################################################################################################
+
+
 if __name__ == '__main__':
     # Parse the arguments
     args = parser.parse_arguments()
+    
     # Define the bank
     if args.proxy is not None:
         proxy_dim = 512
         bank = my_blocks.ProxyBank(proxy_dim)
     else:
         bank = None
+        
     # Compute all the data related object
     train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader = get_datasets_and_dataloaders(args, bank)
-    # Load the chekpoint if available or else rebuild it
     
+    # Load the chekpoint if available or else rebuild it
     if args.ckpt_path is not None:
       model_args = {
         "val_dataset" : val_dataset,
@@ -236,6 +244,7 @@ if __name__ == '__main__':
         "last_pooling_layer" : args.pooling_layer,
         "optimizer_str" : args.optimizer, 
         "lr_scheduler_str" : args.lr_scheduler, 
+        "loss_str" : args.loss,
         "bank" : bank
         }
       model = LightningModel.load_from_checkpoint(args.ckpt_path, **model_args)
@@ -243,7 +252,8 @@ if __name__ == '__main__':
       model_args = {
         "last_pooling_layer" : args.pooling_layer,
         "optimizer_str" : args.optimizer,
-        "lr_scheduler_str" : args.lr_scheduler
+        "lr_scheduler_str" : args.lr_scheduler,
+        "loss_str" : args.loss
         }
       model = LightningModel(val_dataset, test_dataset, args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds, bank = bank, **model_args)
     
