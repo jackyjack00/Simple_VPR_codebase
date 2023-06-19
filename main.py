@@ -74,7 +74,7 @@ class LightningModel(pl.LightningModule):
         self.loss_head = losses.MultiSimilarityLoss( alpha=1, beta=50, base=0.0 )
         
         # Set a loss and its within batch online miner, following command line parameters
-        if self.loss_str == "contrastive:
+        if self.loss_str == "contrastive":
             self.miner_fn = miners.PairMarginMiner(pos_margin=0.2, neg_margin=0.8)
             self.loss_fn = losses.ContrastiveLoss(pos_margin=0.0, neg_margin=1)
         elif self.loss_str == "triplet":
