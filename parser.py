@@ -32,6 +32,9 @@ def parse_arguments():
     parser.add_argument("--proxy", type = str, default = None,
                         help="Set to True to enable the proxy mining operation to generate batches")
     
+    parser.add_argument("--loss", type=str, default="contrastive",
+                        help="loss function:'\n'Contrastive'\n'Triplet'\n'Multisimilarity")
+    
     # Visualizations parameters
     parser.add_argument("--num_preds_to_save", type=int, default=0,
                         help="At the end of training, save N preds for each query. "
