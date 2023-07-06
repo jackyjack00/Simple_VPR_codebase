@@ -85,6 +85,8 @@ def save_preds(predictions, eval_ds, output_folder, save_only_wrong_preds=None):
     save_only_wrong_preds : bool, if True save only the wrongly predicted queries,
         i.e. the ones where the first pred is uncorrect (further than 25 m)
     """
+    print("I AM DOING VISUALI>tion stuff")
+    
     positives_per_query = eval_ds.get_positives()
     os.makedirs(f"{output_folder}/preds", exist_ok=True)
     for query_index, preds in enumerate(tqdm(predictions, ncols=80, desc=f"Saving preds in {output_folder}")):
