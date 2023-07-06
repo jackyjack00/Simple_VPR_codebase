@@ -245,6 +245,7 @@ if __name__ == '__main__':
       model_args = {
         "val_dataset" : val_dataset,
         "test_dataset" : test_dataset,
+        "num_preds_to_save" : args.num_preds_to_save,
         "last_pooling_layer" : args.pooling_layer,
         "optimizer_str" : args.optimizer, 
         "lr_scheduler_str" : args.lr_scheduler, 
@@ -260,6 +261,8 @@ if __name__ == '__main__':
         "loss_str" : args.loss
         }
       model = LightningModel(val_dataset, test_dataset, args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds, bank = bank, **model_args)
+
+    print (f"args pred to save = {args.num_preds_to_save}")
     
     # Model params saving using Pytorch Lightning. Save the best 3 models according to Recall@1
     checkpoint_cb = ModelCheckpoint(
