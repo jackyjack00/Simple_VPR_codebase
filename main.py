@@ -28,7 +28,6 @@ class LightningModel(pl.LightningModule):
         # Visualization Parameters
         self.num_preds_to_save = num_preds_to_save
         self.save_only_wrong_preds = save_only_wrong_preds
-        print(f"num pred to save = {num_preds_to_save} ans self = {self.num_preds_to_save}")
         # Architecture Parameters
         self.optimizer_str = optimizer_str.lower()
         self.lr_scheduler_str = lr_scheduler_str.lower()
@@ -182,7 +181,6 @@ class LightningModel(pl.LightningModule):
             inference_dataset, queries_descriptors, database_descriptors,
             trainer.logger.log_dir, num_preds_to_save, self.save_only_wrong_preds
         )
-        print(f"\n\nDOING STUFF in {trainer.logger.log_dir} saving { num_preds_to_save }" )
         print(recalls_str)
         self.log('R@01', recalls[0], prog_bar=False, logger=True)
         self.log('R@05', recalls[1], prog_bar=False, logger=True)
@@ -261,8 +259,6 @@ if __name__ == '__main__':
         "loss_str" : args.loss
         }
       model = LightningModel(val_dataset, test_dataset, args.descriptors_dim, args.num_preds_to_save, args.save_only_wrong_preds, bank = bank, **model_args)
-
-    print (f"args pred to save = {args.num_preds_to_save}")
     
     # Model params saving using Pytorch Lightning. Save the best 3 models according to Recall@1
     checkpoint_cb = ModelCheckpoint(
