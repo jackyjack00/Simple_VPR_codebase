@@ -28,6 +28,7 @@ class LightningModel(pl.LightningModule):
         # Visualization Parameters
         self.num_preds_to_save = num_preds_to_save
         self.save_only_wrong_preds = save_only_wrong_preds
+        print(f"num pred to save = {num_preds_to_save} ans self = {self.num_preds_to_save}")
         # Architecture Parameters
         self.optimizer_str = optimizer_str.lower()
         self.lr_scheduler_str = lr_scheduler_str.lower()
