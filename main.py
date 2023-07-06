@@ -181,7 +181,7 @@ class LightningModel(pl.LightningModule):
             inference_dataset, queries_descriptors, database_descriptors,
             trainer.logger.log_dir, num_preds_to_save, self.save_only_wrong_preds
         )
-        print("\n\nDOING STUFF")
+        print(f"\n\nDOING STUFF in {trainer.logger.log_dir} saving { num_preds_to_save }" )
         print(recalls_str)
         self.log('R@01', recalls[0], prog_bar=False, logger=True)
         self.log('R@05', recalls[1], prog_bar=False, logger=True)
